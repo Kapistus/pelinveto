@@ -699,7 +699,7 @@
         async function promoteBackupIfExists(eventDate) {
             const { data: backups } = await supabaseClient
                 .from('reservations')
-                .select('id, user_id, profiles!inner(email)')
+                .select('id, user_id, profiles!inner(name)')
                 .eq('event_date', eventDate)
                 .eq('is_backup', true)
                 .order('created_at')
@@ -713,8 +713,8 @@
                     .eq('id', backup.id);
                 
                 // In a real implementation, send email here
-                console.log('Backup promoted for', eventDate, 'email:', backup.profiles.email);
-                alert(`Varavetäjä on ylennetty päävetäjäksi päivälle ${eventDate}`);
+                console.log('Backup promoted for', eventDate, 'user:', backup.profiles.name);
+                alert(`Varavetäjä ${backup.profiles.name} on ylennetty päävetäjäksi päivälle ${eventDate}`);
             }
         }
         
