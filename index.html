@@ -20,6 +20,12 @@
             padding: 20px;
         }
         
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+        }
+        
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -29,8 +35,23 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+        }
+        
         h1, h2 {
             color: #333;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            h2 {
+                font-size: 1.2rem;
+            }
         }
         
         .auth-container {
@@ -40,6 +61,13 @@
             padding: 40px;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .auth-container {
+                margin: 20px auto;
+                padding: 20px;
+            }
         }
         
         .form-group {
@@ -57,12 +85,24 @@
         input[type="password"],
         input[type="text"],
         input[type="tel"],
-        textarea {
+        textarea,
+        select {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            input[type="email"],
+            input[type="password"],
+            input[type="text"],
+            input[type="tel"],
+            textarea,
+            select {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
         }
         
         textarea {
@@ -131,6 +171,14 @@
             margin-bottom: 15px;
         }
         
+        .warning {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        
         .header-bar {
             display: flex;
             justify-content: space-between;
@@ -138,11 +186,35 @@
             margin-bottom: 20px;
             padding-bottom: 15px;
             border-bottom: 2px solid #e5e7eb;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .header-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
         
         .user-info {
             color: #666;
             font-size: 14px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        @media (max-width: 768px) {
+            .button-group {
+                width: 100%;
+            }
+            .button-group button {
+                flex: 1;
+            }
         }
         
         #calendar {
@@ -162,22 +234,39 @@
             height: 100%;
             background: rgba(0,0,0,0.5);
             z-index: 1000;
+            overflow-y: auto;
         }
         
         .modal.active {
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
+            padding: 20px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .modal.active {
+                align-items: flex-start;
+                padding: 10px;
+            }
         }
         
         .modal-content {
             background: white;
             padding: 30px;
             border-radius: 8px;
-            max-width: 500px;
+            max-width: 600px;
             width: 90%;
-            max-height: 80vh;
+            max-height: 90vh;
             overflow-y: auto;
+            margin: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .modal-content {
+                padding: 20px;
+                width: 95%;
+            }
         }
         
         .modal-header {
@@ -212,6 +301,26 @@
             color: #333;
         }
         
+        .backup-badge {
+            display: inline-block;
+            background: #f59e0b;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        
+        .admin-badge {
+            display: inline-block;
+            background: #8b5cf6;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        
         .delete-btn {
             background: #dc2626;
             padding: 5px 10px;
@@ -224,11 +333,25 @@
             background: #b91c1c;
         }
         
+        .promote-btn {
+            background: #f59e0b;
+            padding: 5px 10px;
+            font-size: 12px;
+            margin-top: 5px;
+            width: auto;
+            margin-left: 5px;
+        }
+        
+        .promote-btn:hover {
+            background: #d97706;
+        }
+        
         .tabs {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
             border-bottom: 2px solid #e5e7eb;
+            overflow-x: auto;
         }
         
         .tab {
@@ -240,6 +363,7 @@
             cursor: pointer;
             width: auto;
             font-weight: 500;
+            white-space: nowrap;
         }
         
         .tab:hover {
@@ -271,6 +395,70 @@
         
         .fc-day-today {
             background: #fff9e6 !important;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #2563eb;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .user-list {
+            list-style: none;
+        }
+        
+        .user-item {
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .user-item-info {
+            flex: 1;
+        }
+        
+        .user-item-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .user-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .user-item-actions {
+                width: 100%;
+            }
+            .user-item-actions button {
+                flex: 1;
+            }
         }
     </style>
 </head>
@@ -306,7 +494,7 @@
             </div>
             <div class="form-group">
                 <label>Puhelin</label>
-                <input type="tel" id="registerPhone" required>
+                <input type="tel" id="registerPhone" required pattern="^(\+358|0)[0-9]{9,10}$" placeholder="+358401234567 tai 0401234567">
             </div>
             <div class="form-group">
                 <label>Salasana (vähintään 6 merkkiä)</label>
@@ -323,10 +511,10 @@
     <div id="appScreen" class="container hidden">
         <div class="header-bar">
             <h1>Pelinvetovuorot</h1>
-            <div>
+            <div class="button-group">
                 <span class="user-info" id="userEmail"></span>
-                <button class="secondary-btn" style="width: auto; margin-left: 15px;" onclick="showProfileModal()">Profiili</button>
-                <button class="secondary-btn" style="width: auto; margin-left: 10px;" onclick="logout()">Kirjaudu ulos</button>
+                <button class="secondary-btn" style="width: auto;" onclick="showProfileModal()">Profiili</button>
+                <button class="secondary-btn" style="width: auto;" onclick="logout()">Kirjaudu ulos</button>
             </div>
         </div>
         
@@ -349,7 +537,7 @@
                 <h3>Profiili</h3>
                 <button class="close-btn" onclick="closeProfileModal()">&times;</button>
             </div>
-            <div class="tabs">
+            <div class="tabs" id="profileTabs">
                 <button class="tab" onclick="showTab('profile')">Tietoni</button>
                 <button class="tab active" onclick="showTab('reservations')">Pelinvetovuoroni</button>
             </div>
@@ -366,13 +554,36 @@
                     </div>
                     <div class="form-group">
                         <label>Puhelin</label>
-                        <input type="tel" id="profilePhone" required>
+                        <input type="tel" id="profilePhone" required pattern="^(\+358|0)[0-9]{9,10}$">
                     </div>
                     <button type="submit">Päivitä profiili</button>
                 </form>
             </div>
             <div id="reservationsTab" class="tab-content active">
                 <div id="myReservationsList"></div>
+            </div>
+            <div id="adminTab" class="tab-content">
+                <h4>Käyttäjähallinta</h4>
+                <div id="userList"></div>
+                
+                <h4 style="margin-top: 30px;">Tilastot</h4>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Yhteensä pelejä</div>
+                        <div class="stat-value" id="statTotalGames">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Aktiivisia vetäjiä</div>
+                        <div class="stat-value" id="statActiveMarshals">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Tulevia pelejä</div>
+                        <div class="stat-value" id="statUpcomingGames">-</div>
+                    </div>
+                </div>
+                
+                <h4 style="margin-top: 30px;">Vetäjätilastot</h4>
+                <div id="marshalStats"></div>
             </div>
         </div>
     </div>
@@ -388,6 +599,7 @@
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let calendar;
         let currentUser = null;
+        let isAdmin = false;
         
         // Global functions for onclick handlers
         function showRegister() {
@@ -403,6 +615,7 @@
         async function logout() {
             await supabaseClient.auth.signOut();
             currentUser = null;
+            isAdmin = false;
             document.getElementById('appScreen').classList.add('hidden');
             document.getElementById('loginScreen').classList.remove('hidden');
         }
@@ -422,16 +635,32 @@
                 document.getElementById('profileName').value = data.name || '';
                 document.getElementById('profileEmail').value = currentUser.email;
                 document.getElementById('profilePhone').value = data.phone || '';
+                isAdmin = data.is_admin || false;
+                
+                // Show/hide admin tab
+                const tabs = document.getElementById('profileTabs');
+                let adminTabExists = document.querySelector('.tab[onclick*="admin"]');
+                if (isAdmin && !adminTabExists) {
+                    const adminTab = document.createElement('button');
+                    adminTab.className = 'tab';
+                    adminTab.onclick = () => showTab('admin');
+                    adminTab.textContent = 'Ylläpito';
+                    tabs.appendChild(adminTab);
+                }
+                
+                if (isAdmin) {
+                    await loadAdminData();
+                }
             }
             
             await loadMyReservations();
             document.getElementById('profileModal').classList.add('active');
             // Manually activate reservations tab by default
-            const tabs = document.querySelectorAll('#profileModal .tab');
+            const tabButtons = document.querySelectorAll('#profileModal .tab');
             const tabContents = document.querySelectorAll('#profileModal .tab-content');
-            tabs.forEach(t => t.classList.remove('active'));
+            tabButtons.forEach(t => t.classList.remove('active'));
             tabContents.forEach(c => c.classList.remove('active'));
-            tabs[1].classList.add('active'); // Second tab (Pelinvetovuoroni)
+            tabButtons[1].classList.add('active');
             document.getElementById('reservationsTab').classList.add('active');
         }
         
@@ -439,35 +668,99 @@
             document.getElementById('profileModal').classList.remove('active');
         }
         
-        async function deleteReservation(id) {
-            if (!confirm('Poista ilmoittautuminen tälle päivälle?')) return;
+        async function deleteReservation(id, isAdminAction = false) {
+            const confirmMsg = isAdminAction 
+                ? 'Haluatko varmasti poistaa tämän ilmoittautumisen (admin)?' 
+                : 'Haluatko varmasti poistaa ilmoittautumisesi?';
+            
+            if (!confirm(confirmMsg)) return;
             
             const { error } = await supabaseClient.from('reservations').delete().eq('id', id);
             
             if (error) {
                 alert('Virhe: ' + error.message);
             } else {
+                // Check if there's a backup to promote
+                const { data: reservation } = await supabaseClient
+                    .from('reservations')
+                    .select('event_date')
+                    .eq('id', id)
+                    .single();
+                
+                if (reservation) {
+                    await promoteBackupIfExists(reservation.event_date);
+                }
+                
                 closeDateModal();
                 await loadReservations();
+            }
+        }
+        
+        async function promoteBackupIfExists(eventDate) {
+            const { data: backups } = await supabaseClient
+                .from('reservations')
+                .select('id, user_id, profiles!inner(email)')
+                .eq('event_date', eventDate)
+                .eq('is_backup', true)
+                .order('created_at')
+                .limit(1);
+            
+            if (backups && backups.length > 0) {
+                const backup = backups[0];
+                await supabaseClient
+                    .from('reservations')
+                    .update({ is_backup: false, promoted_at: new Date().toISOString() })
+                    .eq('id', backup.id);
+                
+                // In a real implementation, send email here
+                console.log('Backup promoted for', eventDate, 'email:', backup.profiles.email);
+                alert(`Varavetäjä on ylennetty päävetäjäksi päivälle ${eventDate}`);
             }
         }
         
         async function deleteReservationFromProfile(id) {
             if (!confirm('Poista tämä ilmoittautuminen?')) return;
             
+            const { data: reservation } = await supabaseClient
+                .from('reservations')
+                .select('event_date')
+                .eq('id', id)
+                .single();
+            
             const { error } = await supabaseClient.from('reservations').delete().eq('id', id);
             
             if (error) {
                 alert('Virhe: ' + error.message);
             } else {
+                if (reservation) {
+                    await promoteBackupIfExists(reservation.event_date);
+                }
                 await loadMyReservations();
                 await loadReservations();
             }
         }
         
+        async function toggleAdminStatus(userId, currentStatus) {
+            const action = currentStatus ? 'poistaa' : 'antaa';
+            if (!confirm(`Haluatko ${action} admin-oikeudet tälle käyttäjälle?`)) return;
+            
+            const { error } = await supabaseClient
+                .from('profiles')
+                .update({ is_admin: !currentStatus })
+                .eq('id', userId);
+            
+            if (error) {
+                alert('Virhe: ' + error.message);
+            } else {
+                await loadAdminData();
+            }
+        }
+        
         function showTab(tabName) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            const tabButtons = document.querySelectorAll('#profileModal .tab');
+            const tabContents = document.querySelectorAll('#profileModal .tab-content');
+            tabButtons.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
             
             event.target.classList.add('active');
             document.getElementById(tabName + 'Tab').classList.add('active');
@@ -483,6 +776,16 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
                 currentUser = session.user;
+                
+                // Check admin status
+                const { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('is_admin')
+                    .eq('id', currentUser.id)
+                    .single();
+                
+                isAdmin = profile?.is_admin || false;
+                
                 showApp();
             }
         }
@@ -501,24 +804,33 @@
         function initCalendar() {
             const calendarEl = document.getElementById('calendar');
             calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
+                initialView: window.innerWidth < 768 ? 'listWeek' : 'dayGridMonth',
                 locale: 'fi',
                 firstDay: 1,
+                height: 'auto',
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek'
+                    right: window.innerWidth < 768 ? 'listWeek,dayGridMonth' : 'dayGridMonth,timeGridWeek,listWeek'
                 },
                 buttonText: {
                     today: 'Tänään',
                     month: 'Kuukausi',
-                    week: 'Viikko'
+                    week: 'Viikko',
+                    list: 'Lista'
                 },
                 dateClick: handleDateClick,
                 eventClick: handleEventClick,
                 events: []
             });
             calendar.render();
+            
+            // Responsive calendar view
+            window.addEventListener('resize', () => {
+                if (window.innerWidth < 768 && calendar.view.type === 'dayGridMonth') {
+                    calendar.changeView('listWeek');
+                }
+            });
         }
         
         async function loadReservations() {
@@ -529,6 +841,7 @@
                     event_date,
                     comment,
                     user_id,
+                    is_backup,
                     profiles!inner(name)
                 `);
             
@@ -555,10 +868,18 @@
             });
             
             Object.entries(groupedByDate).forEach(([date, reservations]) => {
-                // Get first marshal's name (or show count if multiple)
-                const displayName = reservations.length === 1 
-                    ? reservations[0].profiles.name 
-                    : `${reservations.length} vetäjää`;
+                const primary = reservations.find(r => !r.is_backup);
+                const backups = reservations.filter(r => r.is_backup);
+                
+                let displayName = '';
+                if (primary) {
+                    displayName = primary.profiles.name;
+                    if (backups.length > 0) {
+                        displayName += ` (+${backups.length})`;
+                    }
+                } else if (backups.length > 0) {
+                    displayName = `${backups.length} varalla`;
+                }
                 
                 console.log('Adding event:', date, displayName);
                 
@@ -567,8 +888,8 @@
                     title: displayName,
                     start: date,
                     allDay: true,
-                    backgroundColor: '#10b981',
-                    borderColor: '#059669',
+                    backgroundColor: primary ? '#10b981' : '#f59e0b',
+                    borderColor: primary ? '#059669' : '#d97706',
                     textColor: '#ffffff',
                     extendedProps: { reservations }
                 });
@@ -593,47 +914,56 @@
                     id,
                     comment,
                     user_id,
+                    is_backup,
                     profiles!inner(name, phone)
                 `)
-                .eq('event_date', dateStr);
+                .eq('event_date', dateStr)
+                .order('is_backup')
+                .order('created_at');
             
             let html = '';
             
-            if (data && data.length > 0) {
-                // Show current marshal(s)
-                html += '<h4 style="margin-bottom: 15px;">Pelinvetäjä:</h4>';
-                data.forEach(res => {
-                    const isOwn = res.user_id === currentUser.id;
+            const primary = data?.find(r => !r.is_backup);
+            const backups = data?.filter(r => r.is_backup) || [];
+            const userHasReservation = data?.some(r => r.user_id === currentUser.id);
+            
+            if (primary) {
+                html += '<h4 style="margin-bottom: 15px;">Päävetäjä:</h4>';
+                const isOwn = primary.user_id === currentUser.id;
+                html += `<div class="reservation-item">
+                    <strong>${primary.profiles.name}</strong>
+                    ${primary.profiles.phone ? `<br>Puhelin: ${primary.profiles.phone}` : ''}
+                    ${primary.comment ? `<br>Kommentti: ${primary.comment}` : ''}
+                    ${isOwn || isAdmin ? `<br><button class="delete-btn" onclick="if(confirm('Haluatko varmasti poistaa ${isOwn ? 'ilmoittautumisesi' : 'tämän ilmoittautumisen'}?')) deleteReservation('${primary.id}', ${!isOwn})">Poista ${isOwn ? 'ilmoittautumiseni' : '(admin)'}</button>` : ''}
+                </div>`;
+            }
+            
+            if (backups.length > 0) {
+                html += '<h4 style="margin-top: 20px; margin-bottom: 15px;">Varavetäjät:</h4>';
+                backups.forEach(backup => {
+                    const isOwn = backup.user_id === currentUser.id;
                     html += `<div class="reservation-item">
-                        <strong>${res.profiles.name}</strong>
-                        ${res.profiles.phone ? `<br>Puhelin: ${res.profiles.phone}` : ''}
-                        ${res.comment ? `<br>Kommentti: ${res.comment}` : ''}
-                        ${isOwn ? `<br><button class="delete-btn" onclick="if(confirm('Haluatko varmasti poistaa ilmoittautumisesi?')) deleteReservation('${res.id}')">Poista ilmoittautumiseni</button>` : ''}
+                        <strong>${backup.profiles.name}</strong> <span class="backup-badge">VARA</span>
+                        ${backup.profiles.phone ? `<br>Puhelin: ${backup.profiles.phone}` : ''}
+                        ${backup.comment ? `<br>Kommentti: ${backup.comment}` : ''}
+                        ${isOwn || isAdmin ? `<br><button class="delete-btn" onclick="if(confirm('Haluatko varmasti poistaa ${isOwn ? 'varavetäjyytesi' : 'tämän varavetäjän'}?')) deleteReservation('${backup.id}', ${!isOwn})">Poista</button>` : ''}
                     </div>`;
                 });
-                
-                // If current user hasn't signed up and there's space, allow signup
-                const alreadySignedUp = data.some(r => r.user_id === currentUser.id);
-                if (!alreadySignedUp && data.length < 1) {
-                    html += '<hr style="margin: 20px 0;">';
-                    html += '<h4 style="margin-bottom: 10px;">Ilmoittaudu vetäjäksi:</h4>';
-                    html += `<form id="reservationForm" onsubmit="return handleReservationSubmit(event, '${dateStr}')">
-                        <div class="form-group">
-                            <label>Kommentti (valinnainen)</label>
-                            <textarea id="reservationComment" placeholder="Esim. 'Tarvitaan apuvetäjä' tai 'Suunnitelma valmis'"></textarea>
-                        </div>
-                        <button type="submit">Ilmoittaudu vetäjäksi</button>
-                    </form>`;
-                }
-            } else {
-                html += '<p style="margin-bottom: 20px;">Ei vielä vetäjää tälle päivälle.</p>';
-                html += `<form id="reservationForm" onsubmit="return handleReservationSubmit(event, '${dateStr}')">
+            }
+            
+            if (!userHasReservation) {
+                html += '<hr style="margin: 20px 0;">';
+                const signupType = primary ? 'varavetäjäksi' : 'vetäjäksi';
+                html += `<h4 style="margin-bottom: 10px;">Ilmoittaudu ${signupType}:</h4>`;
+                html += `<form id="reservationForm" onsubmit="return handleReservationSubmit(event, '${dateStr}', ${!!primary})">
                     <div class="form-group">
                         <label>Kommentti (valinnainen)</label>
                         <textarea id="reservationComment" placeholder="Esim. 'Tarvitaan apuvetäjä' tai 'Suunnitelma valmis'"></textarea>
                     </div>
-                    <button type="submit">Ilmoittaudu vetäjäksi</button>
+                    <button type="submit">Ilmoittaudu ${signupType}</button>
                 </form>`;
+            } else if (!primary) {
+                html += '<p style="margin-top: 20px;">Ei vielä vetäjää tälle päivälle.</p>';
             }
             
             document.getElementById('modalContent').innerHTML = html;
@@ -644,14 +974,15 @@
             handleDateClick({ dateStr: info.event.startStr.split('T')[0] });
         }
         
-        async function handleReservationSubmit(event, dateStr) {
+        async function handleReservationSubmit(event, dateStr, isBackup) {
             event.preventDefault();
             const comment = document.getElementById('reservationComment').value;
             
             const { error } = await supabaseClient.from('reservations').insert({
                 user_id: currentUser.id,
                 event_date: dateStr,
-                comment: comment || null
+                comment: comment || null,
+                is_backup: isBackup
             });
             
             if (error) {
@@ -685,14 +1016,80 @@
                     month: 'long',
                     day: 'numeric'
                 });
+                const role = res.is_backup ? 'VARAVETÄJÄ' : 'PÄÄVETÄJÄ';
+                const badgeClass = res.is_backup ? 'backup-badge' : 'admin-badge';
                 html += `<div class="reservation-item">
-                    <strong>${date}</strong>
+                    <strong>${date}</strong> <span class="${badgeClass}">${role}</span>
                     ${res.comment ? `<br>Kommentti: ${res.comment}` : ''}
                     <br><button class="delete-btn" onclick="deleteReservationFromProfile('${res.id}')">Poista</button>
                 </div>`;
             });
             
             container.innerHTML = html;
+        }
+        
+        async function loadAdminData() {
+            // Load all users
+            const { data: users } = await supabaseClient
+                .from('profiles')
+                .select('id, name, email, phone, is_admin, created_at')
+                .order('name');
+            
+            const userListHtml = users.map(user => `
+                <div class="user-item">
+                    <div class="user-item-info">
+                        <strong>${user.name}</strong> ${user.is_admin ? '<span class="admin-badge">ADMIN</span>' : ''}
+                        <br><small>${user.email}</small>
+                    </div>
+                    <div class="user-item-actions">
+                        ${user.id !== currentUser.id ? `
+                            <button class="secondary-btn" onclick="toggleAdminStatus('${user.id}', ${user.is_admin})">
+                                ${user.is_admin ? 'Poista admin' : 'Tee admin'}
+                            </button>
+                        ` : '<span style="color: #666;">Sinä</span>'}
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('userList').innerHTML = `<ul class="user-list">${userListHtml}</ul>`;
+            
+            // Load statistics
+            const { data: allReservations } = await supabaseClient
+                .from('reservations')
+                .select('event_date, user_id, is_backup');
+            
+            const today = new Date().toISOString().split('T')[0];
+            const totalGames = new Set(allReservations.map(r => r.event_date)).size;
+            const upcomingGames = new Set(allReservations.filter(r => r.event_date >= today).map(r => r.event_date)).size;
+            const activeMarshals = new Set(allReservations.map(r => r.user_id)).size;
+            
+            document.getElementById('statTotalGames').textContent = totalGames;
+            document.getElementById('statUpcomingGames').textContent = upcomingGames;
+            document.getElementById('statActiveMarshals').textContent = activeMarshals;
+            
+            // Marshal stats
+            const marshalCounts = {};
+            allReservations.forEach(res => {
+                if (!res.is_backup) {
+                    marshalCounts[res.user_id] = (marshalCounts[res.user_id] || 0) + 1;
+                }
+            });
+            
+            const marshalStatsHtml = await Promise.all(
+                Object.entries(marshalCounts)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(async ([userId, count]) => {
+                        const user = users.find(u => u.id === userId);
+                        return `
+                            <div class="stat-card">
+                                <div class="stat-label">${user?.name || 'Tuntematon'}</div>
+                                <div class="stat-value">${count} peliä</div>
+                            </div>
+                        `;
+                    })
+            );
+            
+            document.getElementById('marshalStats').innerHTML = `<div class="stats-grid">${marshalStatsHtml.join('')}</div>`;
         }
         
         // Form handlers
@@ -707,6 +1104,15 @@
                 showMessage('authMessage', error.message, 'error');
             } else {
                 currentUser = data.user;
+                
+                // Check admin status
+                const { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('is_admin')
+                    .eq('id', currentUser.id)
+                    .single();
+                
+                isAdmin = profile?.is_admin || false;
                 showApp();
             }
         });
@@ -733,7 +1139,8 @@
                     await supabaseClient.from('profiles').insert({
                         id: data.user.id,
                         name,
-                        phone
+                        phone,
+                        is_admin: false
                     });
                 }
                 showMessage('registerMessage', 
