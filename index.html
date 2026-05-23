@@ -670,6 +670,11 @@
         
         function closeProfileModal() {
             document.getElementById('profileModal').classList.remove('active');
+            // Remove admin tab if it exists to prevent duplicates on next open
+            const adminTab = document.getElementById('adminTabButton');
+            if (adminTab) {
+                adminTab.remove();
+            }
         }
         
         async function deleteReservation(id, isAdminAction = false) {
