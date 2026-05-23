@@ -350,10 +350,10 @@
                 <button class="close-btn" onclick="closeProfileModal()">&times;</button>
             </div>
             <div class="tabs">
-                <button class="tab active" onclick="showTab('profile')">Tietoni</button>
-                <button class="tab" onclick="showTab('reservations')">Varaukset</button>
+                <button class="tab" onclick="showTab('profile')">Tietoni</button>
+                <button class="tab active" onclick="showTab('reservations')">Pelinvetovuoroni</button>
             </div>
-            <div id="profileTab" class="tab-content active">
+            <div id="profileTab" class="tab-content">
                 <div id="profileMessage"></div>
                 <form id="profileForm">
                     <div class="form-group">
@@ -371,7 +371,7 @@
                     <button type="submit">Päivitä profiili</button>
                 </form>
             </div>
-            <div id="reservationsTab" class="tab-content">
+            <div id="reservationsTab" class="tab-content active">
                 <div id="myReservationsList"></div>
             </div>
         </div>
@@ -426,11 +426,11 @@
             
             await loadMyReservations();
             document.getElementById('profileModal').classList.add('active');
-            // Manually activate profile tab
+            // Manually activate reservations tab by default
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelector('.tab').classList.add('active');
-            document.getElementById('profileTab').classList.add('active');
+            document.querySelectorAll('.tab')[1].classList.add('active'); // Second tab (Pelinvetovuoroni)
+            document.getElementById('reservationsTab').classList.add('active');
         }
         
         function closeProfileModal() {
@@ -615,8 +615,7 @@
                     </form>`;
                 }
             } else {
-                html += '<p style="margin-bottom: 20px;">Ei vielä pelinvetäjää tälle päivälle.</p>';
-                html += '<h4 style="margin-bottom: 10px;">Ilmoittaudu vetäjäksi:</h4>';
+                html += '<p style="margin-bottom: 20px;">Ei vielä vetäjää tälle päivälle.</p>';
                 html += `<form id="reservationForm" onsubmit="return handleReservationSubmit(event, '${dateStr}')">
                     <div class="form-group">
                         <label>Kommentti (valinnainen)</label>
