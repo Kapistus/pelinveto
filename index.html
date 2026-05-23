@@ -1078,9 +1078,10 @@
             if (primary) {
                 html += '<h4 style="margin-bottom: 15px;">Päävetäjä:</h4>';
                 const isOwn = primary.user_id === currentUser.id;
+                const canSeeDetails = isAdmin || isOwn;
                 html += `<div class="reservation-item">
                     <strong>${primary.profiles.name}</strong>
-                    ${primary.profiles.phone ? `<br>Puhelin: ${primary.profiles.phone}` : ''}
+                    ${canSeeDetails && primary.profiles.phone ? `<br>Puhelin: ${primary.profiles.phone}` : ''}
                     ${primary.comment ? `<br>Kommentti: ${primary.comment}` : ''}
                     ${isOwn || isAdmin ? `<br><button class="delete-btn" onclick="if(confirm('Haluatko varmasti poistaa ${isOwn ? 'ilmoittautumisesi' : 'tämän ilmoittautumisen'}?')) deleteReservation('${primary.id}', ${!isOwn})">Poista ${isOwn ? 'ilmoittautumiseni' : '(admin)'}</button>` : ''}
                 </div>`;
@@ -1090,9 +1091,10 @@
                 html += '<h4 style="margin-top: 20px; margin-bottom: 15px;">Varavetäjät:</h4>';
                 backups.forEach(backup => {
                     const isOwn = backup.user_id === currentUser.id;
+                    const canSeeDetails = isAdmin || isOwn;
                     html += `<div class="reservation-item">
                         <strong>${backup.profiles.name}</strong> <span class="backup-badge">VARA</span>
-                        ${backup.profiles.phone ? `<br>Puhelin: ${backup.profiles.phone}` : ''}
+                        ${canSeeDetails && backup.profiles.phone ? `<br>Puhelin: ${backup.profiles.phone}` : ''}
                         ${backup.comment ? `<br>Kommentti: ${backup.comment}` : ''}
                         ${isOwn || isAdmin ? `<br><button class="delete-btn" onclick="if(confirm('Haluatko varmasti poistaa ${isOwn ? 'varavetäjyytesi' : 'tämän varavetäjän'}?')) deleteReservation('${backup.id}', ${!isOwn})">Poista</button>` : ''}
                     </div>`;
