@@ -1038,7 +1038,6 @@
                     id: date,
                     title: displayName,
                     start: date,
-                    allDay: true,
                     backgroundColor: primary ? '#10b981' : '#f59e0b',
                     borderColor: primary ? '#059669' : '#d97706',
                     textColor: '#ffffff',
@@ -1246,12 +1245,14 @@
                 count: recentMarshalCounts[user.id] || 0
             })).sort((a, b) => a.count - b.count);
             
-            const leastActiveHtml = leastActiveData.slice(0, 5).map(item => `
-                <div class="stat-card">
-                    <div class="stat-label">${item.name}</div>
-                    <div class="stat-value">${item.count} peliä</div>
-                </div>
-            `).join('');
+            const leastActiveHtml = leastActiveData.length > 0 
+                ? leastActiveData.slice(0, 5).map(item => `
+                    <div class="stat-card">
+                        <div class="stat-label">${item.name}</div>
+                        <div class="stat-value">${item.count} peliä</div>
+                    </div>
+                `).join('')
+                : '<p style="color: #666;">Ei käyttäjiä</p>';
             
             document.getElementById('leastActiveMarshals').innerHTML = `<div class="stats-grid">${leastActiveHtml}</div>`;
             
