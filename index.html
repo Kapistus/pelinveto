@@ -33,11 +33,15 @@
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: visible;
         }
         
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
+                border-radius: 0;
+                min-height: 100vh;
+                overflow: visible;
             }
         }
         
@@ -235,6 +239,41 @@
         
         #calendar {
             margin-top: 20px;
+            overflow: visible;
+        }
+        
+        @media (max-width: 768px) {
+            #calendar {
+                margin-top: 15px;
+                /* Ensure calendar doesn't get cut off */
+                min-height: 400px;
+            }
+            
+            /* Fix FullCalendar mobile issues */
+            .fc .fc-toolbar {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .fc .fc-toolbar-title {
+                font-size: 1.2rem;
+                margin: 5px 0;
+            }
+            
+            .fc .fc-button {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+            
+            .fc-header-toolbar {
+                margin-bottom: 15px !important;
+            }
+            
+            /* Prevent calendar from being cut off when scrolling */
+            .fc-view-harness {
+                position: relative;
+                min-height: 300px;
+            }
         }
         
         .hidden {
@@ -894,27 +933,28 @@
             const isMobile = window.innerWidth < 768;
             
             calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: isMobile ? 'listMonth' : 'dayGridMonth',
+                initialView: 'dayGridMonth',
                 locale: 'fi',
                 firstDay: 1,
-                height: isMobile ? 'auto' : 'auto',
-                contentHeight: isMobile ? 'auto' : 600,
+                height: 'auto',
+                aspectRatio: isMobile ? 1.0 : 1.35,
                 headerToolbar: {
-                    left: 'prev,next today',
+                    left: 'prev,next',
                     center: 'title',
-                    right: isMobile ? 'dayGridMonth,listMonth' : 'dayGridMonth,listMonth'
+                    right: isMobile ? 'today' : 'today dayGridMonth,listMonth'
                 },
+                footerToolbar: isMobile ? {
+                    center: 'dayGridMonth,listMonth'
+                } : false,
                 buttonText: {
                     today: 'Tänään',
-                    month: 'Kuukausi',
-                    week: 'Viikko',
-                    list: 'Lista',
                     dayGridMonth: 'Kalenteri',
                     listMonth: 'Lista'
                 },
                 dateClick: handleDateClick,
                 eventClick: handleEventClick,
-                events: []
+                events: [],
+                eventDisplay: 'block'
             });
             calendar.render();
         }
