@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Airsoft Kokkola - pelinvedot</title>
+    <title>Marshal Signup Calendar</title>
     
     <!-- FullCalendar CSS -->
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
@@ -270,7 +270,7 @@
 <body>
     <!-- Auth screens -->
     <div id="loginScreen" class="auth-container">
-        <h2 style="margin-bottom: 20px;">Airsoft Kokkola - pelinvetovuorot</h2>
+        <h2 style="margin-bottom: 20px;">Marshal Signup - Login</h2>
         <div id="authMessage"></div>
         <form id="loginForm">
             <div class="form-group">
@@ -443,17 +443,17 @@
             }
         });
         
-        function showRegister() {
+        window.showRegister = function() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('registerScreen').classList.remove('hidden');
         }
         
-        function showLogin() {
+        window.showLogin = function() {
             document.getElementById('registerScreen').classList.add('hidden');
             document.getElementById('loginScreen').classList.remove('hidden');
         }
         
-        async function logout() {
+        window.logout = async function() {
             await supabase.auth.signOut();
             currentUser = null;
             document.getElementById('appScreen').classList.add('hidden');
@@ -625,7 +625,7 @@
             }
         }
         
-        async function deleteReservation(id) {
+        window.deleteReservation = async function(id) {
             if (!confirm('Remove your signup for this date?')) return;
             
             const { error } = await supabase.from('reservations').delete().eq('id', id);
@@ -638,12 +638,12 @@
             }
         }
         
-        function closeDateModal() {
+        window.closeDateModal = function() {
             document.getElementById('dateModal').classList.remove('active');
         }
         
         // Profile
-        async function showProfileModal() {
+        window.showProfileModal = async function() {
             // Load profile data
             const { data, error } = await supabase
                 .from('profiles')
@@ -664,7 +664,7 @@
             showTab('profile');
         }
         
-        function closeProfileModal() {
+        window.closeProfileModal = function() {
             document.getElementById('profileModal').classList.remove('active');
         }
         
@@ -719,7 +719,7 @@
             container.innerHTML = html;
         }
         
-        async function deleteReservationFromProfile(id) {
+        window.deleteReservationFromProfile = async function(id) {
             if (!confirm('Remove this signup?')) return;
             
             const { error } = await supabase.from('reservations').delete().eq('id', id);
@@ -732,7 +732,7 @@
             }
         }
         
-        function showTab(tabName) {
+        window.showTab = function(tabName) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             
