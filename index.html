@@ -639,10 +639,11 @@
                 
                 // Show/hide admin tab
                 const tabs = document.getElementById('profileTabs');
-                let adminTabExists = tabs.querySelector('.tab[onclick*="admin"]');
+                let adminTabExists = document.getElementById('adminTabButton');
                 
                 if (isAdmin && !adminTabExists) {
                     const adminTab = document.createElement('button');
+                    adminTab.id = 'adminTabButton';
                     adminTab.className = 'tab';
                     adminTab.onclick = () => showTab('admin');
                     adminTab.textContent = 'Ylläpito';
