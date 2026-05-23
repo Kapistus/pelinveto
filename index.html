@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pelinvetokalenteri</title>
+    <title>Airsoft Kokkola - Pelinvetovuorot</title>
     
-    <!-- FullCalendar CSS -->
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
     
     <style>
@@ -30,8 +29,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
-        h1 {
-            margin-bottom: 20px;
+        h1, h2 {
             color: #333;
         }
         
@@ -268,64 +266,61 @@
     </style>
 </head>
 <body>
-    <!-- Auth screens -->
     <div id="loginScreen" class="auth-container">
-        <h2 style="margin-bottom: 20px;">Kirjautuminen</h2>
+        <h2 style="margin-bottom: 20px;">Airsoft Kokkola - Pelinvetovuorot</h2>
         <div id="authMessage"></div>
         <form id="loginForm">
             <div class="form-group">
-                <label>Email</label>
+                <label>Sähköposti</label>
                 <input type="email" id="loginEmail" required>
             </div>
             <div class="form-group">
-                <label>Password</label>
+                <label>Salasana</label>
                 <input type="password" id="loginPassword" required>
             </div>
-            <button type="submit">Login</button>
-            <button type="button" class="link-btn" onclick="showRegister()">Rekisteröidy täältä</button>
+            <button type="submit">Kirjaudu</button>
+            <button type="button" class="link-btn" onclick="showRegister()">Tarvitsetko tunnukset? Rekisteröidy</button>
         </form>
     </div>
 
     <div id="registerScreen" class="auth-container hidden">
-        <h2 style="margin-bottom: 20px;">Register</h2>
+        <h2 style="margin-bottom: 20px;">Rekisteröidy</h2>
         <div id="registerMessage"></div>
         <form id="registerForm">
             <div class="form-group">
-                <label>Name</label>
+                <label>Nimi</label>
                 <input type="text" id="registerName" required>
             </div>
             <div class="form-group">
-                <label>Email</label>
+                <label>Sähköposti</label>
                 <input type="email" id="registerEmail" required>
             </div>
             <div class="form-group">
-                <label>Phone</label>
+                <label>Puhelin</label>
                 <input type="tel" id="registerPhone" required>
             </div>
             <div class="form-group">
-                <label>Password</label>
+                <label>Salasana (vähintään 6 merkkiä)</label>
                 <input type="password" id="registerPassword" required minlength="6">
             </div>
-            <button type="submit">Register</button>
-            <button type="button" class="link-btn" onclick="showLogin()">Kirjaudu täältä</button>
+            <button type="submit">Rekisteröidy</button>
+            <button type="button" class="link-btn" onclick="showLogin()">Onko sinulla jo tunnukset? Kirjaudu</button>
         </form>
     </div>
 
-    <!-- Main app -->
     <div id="appScreen" class="container hidden">
         <div class="header-bar">
-            <h1>Marshal Signup Calendar</h1>
+            <h1>Pelinvetovuorot</h1>
             <div>
                 <span class="user-info" id="userEmail"></span>
-                <button class="secondary-btn" style="width: auto; margin-left: 15px;" onclick="showProfileModal()">Profile</button>
-                <button class="secondary-btn" style="width: auto; margin-left: 10px;" onclick="logout()">Logout</button>
+                <button class="secondary-btn" style="width: auto; margin-left: 15px;" onclick="showProfileModal()">Profiili</button>
+                <button class="secondary-btn" style="width: auto; margin-left: 10px;" onclick="logout()">Kirjaudu ulos</button>
             </div>
         </div>
         
         <div id="calendar"></div>
     </div>
 
-    <!-- Date click modal -->
     <div id="dateModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -336,33 +331,32 @@
         </div>
     </div>
 
-    <!-- Profile modal -->
     <div id="profileModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Profile</h3>
+                <h3>Profiili</h3>
                 <button class="close-btn" onclick="closeProfileModal()">&times;</button>
             </div>
             <div class="tabs">
-                <button class="tab active" onclick="showTab('profile')">My Info</button>
-                <button class="tab" onclick="showTab('reservations')">My Reservations</button>
+                <button class="tab active" onclick="showTab('profile')">Tietoni</button>
+                <button class="tab" onclick="showTab('reservations')">Varaukset</button>
             </div>
             <div id="profileTab" class="tab-content active">
                 <div id="profileMessage"></div>
                 <form id="profileForm">
                     <div class="form-group">
-                        <label>Name</label>
+                        <label>Nimi</label>
                         <input type="text" id="profileName" required>
                     </div>
                     <div class="form-group">
-                        <label>Email (read-only)</label>
+                        <label>Sähköposti (vain luku)</label>
                         <input type="email" id="profileEmail" readonly style="background: #f5f5f5;">
                     </div>
                     <div class="form-group">
-                        <label>Phone</label>
+                        <label>Puhelin</label>
                         <input type="tel" id="profilePhone" required>
                     </div>
-                    <button type="submit">Update Profile</button>
+                    <button type="submit">Päivitä profiili</button>
                 </form>
             </div>
             <div id="reservationsTab" class="tab-content">
@@ -371,36 +365,309 @@
         </div>
     </div>
 
-    <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- FullCalendar JS -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     
     <script>
         const SUPABASE_URL = 'https://kjbzmjombtqciljlewvu.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqYnptam9tYnRxY2lsamxld3Z1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1Njc0NDMsImV4cCI6MjA5NTE0MzQ0M30.JfvLhxgcZkcPptRjDHgVneGr0PHRWHc76NFTpkp7q78';
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let calendar;
         let currentUser = null;
         
-        // Check session on load
+        // Global functions for onclick handlers
+        function showRegister() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('registerScreen').classList.remove('hidden');
+        }
+        
+        function showLogin() {
+            document.getElementById('registerScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+        }
+        
+        async function logout() {
+            await supabaseClient.auth.signOut();
+            currentUser = null;
+            document.getElementById('appScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+        }
+        
+        function closeDateModal() {
+            document.getElementById('dateModal').classList.remove('active');
+        }
+        
+        async function showProfileModal() {
+            const { data, error } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('id', currentUser.id)
+                .single();
+            
+            if (data) {
+                document.getElementById('profileName').value = data.name || '';
+                document.getElementById('profileEmail').value = currentUser.email;
+                document.getElementById('profilePhone').value = data.phone || '';
+            }
+            
+            await loadMyReservations();
+            document.getElementById('profileModal').classList.add('active');
+            showTab('profile');
+        }
+        
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.remove('active');
+        }
+        
+        async function deleteReservation(id) {
+            if (!confirm('Poista ilmoittautuminen tälle päivälle?')) return;
+            
+            const { error } = await supabaseClient.from('reservations').delete().eq('id', id);
+            
+            if (error) {
+                alert('Virhe: ' + error.message);
+            } else {
+                closeDateModal();
+                await loadReservations();
+            }
+        }
+        
+        async function deleteReservationFromProfile(id) {
+            if (!confirm('Poista tämä ilmoittautuminen?')) return;
+            
+            const { error } = await supabaseClient.from('reservations').delete().eq('id', id);
+            
+            if (error) {
+                alert('Virhe: ' + error.message);
+            } else {
+                await loadMyReservations();
+                await loadReservations();
+            }
+        }
+        
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+        
+        function showMessage(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            el.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+        
+        // Init
         async function init() {
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
                 currentUser = session.user;
                 showApp();
             }
         }
         
-        // Auth functions
+        async function showApp() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('registerScreen').classList.add('hidden');
+            document.getElementById('appScreen').classList.remove('hidden');
+            
+            document.getElementById('userEmail').textContent = currentUser.email;
+            
+            initCalendar();
+            await loadReservations();
+        }
+        
+        function initCalendar() {
+            const calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'fi',
+                firstDay: 1,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek'
+                },
+                buttonText: {
+                    today: 'Tänään',
+                    month: 'Kuukausi',
+                    week: 'Viikko'
+                },
+                dateClick: handleDateClick,
+                eventClick: handleEventClick,
+                events: []
+            });
+            calendar.render();
+        }
+        
+        async function loadReservations() {
+            const { data, error } = await supabaseClient
+                .from('reservations')
+                .select(`
+                    id,
+                    event_date,
+                    comment,
+                    user_id,
+                    profiles!inner(name)
+                `);
+            
+            if (error) {
+                console.error('Virhe ladattaessa varauksia:', error);
+                return;
+            }
+            
+            calendar.removeAllEvents();
+            
+            const groupedByDate = {};
+            data.forEach(res => {
+                if (!groupedByDate[res.event_date]) {
+                    groupedByDate[res.event_date] = [];
+                }
+                groupedByDate[res.event_date].push(res);
+            });
+            
+            Object.entries(groupedByDate).forEach(([date, reservations]) => {
+                calendar.addEvent({
+                    id: date,
+                    title: `${reservations.length} vetäjä${reservations.length > 1 ? 'ä' : ''}`,
+                    start: date,
+                    allDay: true,
+                    backgroundColor: '#2563eb',
+                    borderColor: '#1d4ed8',
+                    extendedProps: { reservations }
+                });
+            });
+        }
+        
+        async function handleDateClick(info) {
+            const dateStr = info.dateStr;
+            const date = new Date(dateStr + 'T00:00:00');
+            const formattedDate = date.toLocaleDateString('fi-FI', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            document.getElementById('modalDateTitle').textContent = formattedDate;
+            
+            const { data, error } = await supabaseClient
+                .from('reservations')
+                .select(`
+                    id,
+                    comment,
+                    user_id,
+                    profiles!inner(name, phone)
+                `)
+                .eq('event_date', dateStr);
+            
+            let html = '';
+            
+            if (data && data.length > 0) {
+                html += '<h4 style="margin-bottom: 15px;">Ilmoittautuneet vetäjät:</h4>';
+                data.forEach(res => {
+                    const isOwn = res.user_id === currentUser.id;
+                    html += `<div class="reservation-item">
+                        <strong>${res.profiles.name}</strong>
+                        ${res.profiles.phone ? `<br>Puhelin: ${res.profiles.phone}` : ''}
+                        ${res.comment ? `<br>Kommentti: ${res.comment}` : ''}
+                        ${isOwn ? `<br><button class="delete-btn" onclick="deleteReservation('${res.id}')">Poista ilmoittautumiseni</button>` : ''}
+                    </div>`;
+                });
+                
+                const alreadySignedUp = data.some(r => r.user_id === currentUser.id);
+                if (!alreadySignedUp) {
+                    html += '<hr style="margin: 20px 0;">';
+                    html += '<h4 style="margin-bottom: 10px;">Ilmoittaudu vetäjäksi:</h4>';
+                    html += `<form id="reservationForm" onsubmit="return handleReservationSubmit(event, '${dateStr}')">
+                        <div class="form-group">
+                            <label>Kommentti (valinnainen)</label>
+                            <textarea id="reservationComment"></textarea>
+                        </div>
+                        <button type="submit">Ilmoittaudu</button>
+                    </form>`;
+                }
+            } else {
+                html += '<p style="margin-bottom: 20px;">Ei vielä ilmoittautuneita.</p>';
+                html += '<h4 style="margin-bottom: 10px;">Ole ensimmäinen vetäjä:</h4>';
+                html += `<form id="reservationForm" onsubmit="return handleReservationSubmit(event, '${dateStr}')">
+                    <div class="form-group">
+                        <label>Kommentti (valinnainen)</label>
+                        <textarea id="reservationComment"></textarea>
+                    </div>
+                    <button type="submit">Ilmoittaudu</button>
+                </form>`;
+            }
+            
+            document.getElementById('modalContent').innerHTML = html;
+            document.getElementById('dateModal').classList.add('active');
+        }
+        
+        function handleEventClick(info) {
+            handleDateClick({ dateStr: info.event.startStr.split('T')[0] });
+        }
+        
+        async function handleReservationSubmit(event, dateStr) {
+            event.preventDefault();
+            const comment = document.getElementById('reservationComment').value;
+            
+            const { error } = await supabaseClient.from('reservations').insert({
+                user_id: currentUser.id,
+                event_date: dateStr,
+                comment: comment || null
+            });
+            
+            if (error) {
+                alert('Virhe ilmoittautumisessa: ' + error.message);
+            } else {
+                closeDateModal();
+                await loadReservations();
+            }
+            return false;
+        }
+        
+        async function loadMyReservations() {
+            const { data, error } = await supabaseClient
+                .from('reservations')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .order('event_date', { ascending: true });
+            
+            const container = document.getElementById('myReservationsList');
+            
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p style="color: #666;">Sinulla ei ole tulevia varauksia.</p>';
+                return;
+            }
+            
+            let html = '';
+            data.forEach(res => {
+                const date = new Date(res.event_date + 'T00:00:00').toLocaleDateString('fi-FI', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                html += `<div class="reservation-item">
+                    <strong>${date}</strong>
+                    ${res.comment ? `<br>Kommentti: ${res.comment}` : ''}
+                    <br><button class="delete-btn" onclick="deleteReservationFromProfile('${res.id}')">Poista</button>
+                </div>`;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Form handlers
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             
             if (error) {
                 showMessage('authMessage', error.message, 'error');
@@ -417,7 +684,7 @@
             const phone = document.getElementById('registerPhone').value;
             const password = document.getElementById('registerPassword').value;
             
-            const { data, error } = await supabase.auth.signUp({
+            const { data, error } = await supabaseClient.auth.signUp({
                 email,
                 password,
                 options: {
@@ -428,245 +695,19 @@
             if (error) {
                 showMessage('registerMessage', error.message, 'error');
             } else {
-                // Create profile entry
                 if (data.user) {
-                    await supabase.from('profiles').insert({
+                    await supabaseClient.from('profiles').insert({
                         id: data.user.id,
                         name,
                         phone
                     });
                 }
                 showMessage('registerMessage', 
-                    'Registration successful! Please check your email to confirm your account.', 
+                    'Rekisteröinti onnistui! Tarkista sähköpostisi vahvistaaksesi tilisi.', 
                     'success');
                 setTimeout(() => showLogin(), 3000);
             }
         });
-        
-        window.showRegister = function() {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('registerScreen').classList.remove('hidden');
-        }
-        
-        window.showLogin = function() {
-            document.getElementById('registerScreen').classList.add('hidden');
-            document.getElementById('loginScreen').classList.remove('hidden');
-        }
-        
-        window.logout = async function() {
-            await supabase.auth.signOut();
-            currentUser = null;
-            document.getElementById('appScreen').classList.add('hidden');
-            document.getElementById('loginScreen').classList.remove('hidden');
-        }
-        
-        async function showApp() {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('registerScreen').classList.add('hidden');
-            document.getElementById('appScreen').classList.remove('hidden');
-            
-            document.getElementById('userEmail').textContent = currentUser.email;
-            
-            initCalendar();
-            await loadReservations();
-        }
-        
-        // Calendar
-        function initCalendar() {
-            const calendarEl = document.getElementById('calendar');
-            calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek'
-                },
-                dateClick: handleDateClick,
-                eventClick: handleEventClick,
-                events: []
-            });
-            calendar.render();
-        }
-        
-        async function loadReservations() {
-            const { data, error } = await supabase
-                .from('reservations')
-                .select(`
-                    id,
-                    event_date,
-                    comment,
-                    user_id,
-                    profiles!inner(name)
-                `);
-            
-            if (error) {
-                console.error('Error loading reservations:', error);
-                return;
-            }
-            
-            // Clear existing events
-            calendar.removeAllEvents();
-            
-            // Group reservations by date
-            const groupedByDate = {};
-            data.forEach(res => {
-                if (!groupedByDate[res.event_date]) {
-                    groupedByDate[res.event_date] = [];
-                }
-                groupedByDate[res.event_date].push(res);
-            });
-            
-            // Add events to calendar
-            Object.entries(groupedByDate).forEach(([date, reservations]) => {
-                calendar.addEvent({
-                    id: date,
-                    title: `${reservations.length} Marshal${reservations.length > 1 ? 's' : ''}`,
-                    start: date,
-                    allDay: true,
-                    backgroundColor: '#2563eb',
-                    borderColor: '#1d4ed8',
-                    extendedProps: { reservations }
-                });
-            });
-        }
-        
-        async function handleDateClick(info) {
-            const dateStr = info.dateStr;
-            const formattedDate = new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-            
-            document.getElementById('modalDateTitle').textContent = formattedDate;
-            
-            // Get reservations for this date
-            const { data, error } = await supabase
-                .from('reservations')
-                .select(`
-                    id,
-                    comment,
-                    user_id,
-                    profiles!inner(name, phone)
-                `)
-                .eq('event_date', dateStr);
-            
-            let html = '';
-            
-            if (data && data.length > 0) {
-                html += '<h4 style="margin-bottom: 15px;">Marshals signed up:</h4>';
-                data.forEach(res => {
-                    const isOwn = res.user_id === currentUser.id;
-                    html += `<div class="reservation-item">
-                        <strong>${res.profiles.name}</strong>
-                        ${res.profiles.phone ? `<br>Phone: ${res.profiles.phone}` : ''}
-                        ${res.comment ? `<br>Comment: ${res.comment}` : ''}
-                        ${isOwn ? `<br><button class="delete-btn" onclick="deleteReservation('${res.id}')">Remove My Signup</button>` : ''}
-                    </div>`;
-                });
-                
-                // Check if current user already signed up
-                const alreadySignedUp = data.some(r => r.user_id === currentUser.id);
-                if (!alreadySignedUp) {
-                    html += '<hr style="margin: 20px 0;">';
-                    html += '<h4 style="margin-bottom: 10px;">Sign up as marshal:</h4>';
-                    html += `<form id="reservationForm">
-                        <div class="form-group">
-                            <label>Comment (optional)</label>
-                            <textarea id="reservationComment"></textarea>
-                        </div>
-                        <button type="submit">Sign Me Up</button>
-                    </form>`;
-                }
-            } else {
-                html += '<p style="margin-bottom: 20px;">No marshals signed up yet.</p>';
-                html += '<h4 style="margin-bottom: 10px;">Be the first to sign up:</h4>';
-                html += `<form id="reservationForm">
-                    <div class="form-group">
-                        <label>Comment (optional)</label>
-                        <textarea id="reservationComment"></textarea>
-                    </div>
-                    <button type="submit">Sign Me Up</button>
-                </form>`;
-            }
-            
-            document.getElementById('modalContent').innerHTML = html;
-            document.getElementById('dateModal').classList.add('active');
-            
-            // Add form handler
-            const form = document.getElementById('reservationForm');
-            if (form) {
-                form.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    createReservation(dateStr);
-                });
-            }
-        }
-        
-        function handleEventClick(info) {
-            handleDateClick({ dateStr: info.event.startStr.split('T')[0] });
-        }
-        
-        async function createReservation(dateStr) {
-            const comment = document.getElementById('reservationComment').value;
-            
-            const { error } = await supabase.from('reservations').insert({
-                user_id: currentUser.id,
-                event_date: dateStr,
-                comment: comment || null
-            });
-            
-            if (error) {
-                alert('Error creating reservation: ' + error.message);
-            } else {
-                closeDateModal();
-                await loadReservations();
-            }
-        }
-        
-        window.deleteReservation = async function(id) {
-            if (!confirm('Remove your signup for this date?')) return;
-            
-            const { error } = await supabase.from('reservations').delete().eq('id', id);
-            
-            if (error) {
-                alert('Error deleting reservation: ' + error.message);
-            } else {
-                closeDateModal();
-                await loadReservations();
-            }
-        }
-        
-        window.closeDateModal = function() {
-            document.getElementById('dateModal').classList.remove('active');
-        }
-        
-        // Profile
-        window.showProfileModal = async function() {
-            // Load profile data
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', currentUser.id)
-                .single();
-            
-            if (data) {
-                document.getElementById('profileName').value = data.name || '';
-                document.getElementById('profileEmail').value = currentUser.email;
-                document.getElementById('profilePhone').value = data.phone || '';
-            }
-            
-            // Load user's reservations
-            await loadMyReservations();
-            
-            document.getElementById('profileModal').classList.add('active');
-            showTab('profile');
-        }
-        
-        window.closeProfileModal = function() {
-            document.getElementById('profileModal').classList.remove('active');
-        }
         
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -674,7 +715,7 @@
             const name = document.getElementById('profileName').value;
             const phone = document.getElementById('profilePhone').value;
             
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('profiles')
                 .update({ name, phone })
                 .eq('id', currentUser.id);
@@ -682,70 +723,11 @@
             if (error) {
                 showMessage('profileMessage', error.message, 'error');
             } else {
-                showMessage('profileMessage', 'Profile updated successfully!', 'success');
-                await loadReservations(); // Refresh calendar to show updated name
+                showMessage('profileMessage', 'Profiili päivitetty!', 'success');
+                await loadReservations();
             }
         });
         
-        async function loadMyReservations() {
-            const { data, error } = await supabase
-                .from('reservations')
-                .select('*')
-                .eq('user_id', currentUser.id)
-                .order('event_date', { ascending: true });
-            
-            const container = document.getElementById('myReservationsList');
-            
-            if (!data || data.length === 0) {
-                container.innerHTML = '<p style="color: #666;">You have no upcoming marshal signups.</p>';
-                return;
-            }
-            
-            let html = '';
-            data.forEach(res => {
-                const date = new Date(res.event_date + 'T00:00:00').toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
-                html += `<div class="reservation-item">
-                    <strong>${date}</strong>
-                    ${res.comment ? `<br>Comment: ${res.comment}` : ''}
-                    <br><button class="delete-btn" onclick="deleteReservationFromProfile('${res.id}')">Remove</button>
-                </div>`;
-            });
-            
-            container.innerHTML = html;
-        }
-        
-        window.deleteReservationFromProfile = async function(id) {
-            if (!confirm('Remove this signup?')) return;
-            
-            const { error } = await supabase.from('reservations').delete().eq('id', id);
-            
-            if (error) {
-                alert('Error: ' + error.message);
-            } else {
-                await loadMyReservations();
-                await loadReservations();
-            }
-        }
-        
-        window.showTab = function(tabName) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
-            event.target.classList.add('active');
-            document.getElementById(tabName + 'Tab').classList.add('active');
-        }
-        
-        function showMessage(elementId, message, type) {
-            const el = document.getElementById(elementId);
-            el.innerHTML = `<div class="${type}">${message}</div>`;
-        }
-        
-        // Initialize
         init();
     </script>
 </body>
