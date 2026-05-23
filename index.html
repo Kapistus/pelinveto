@@ -427,9 +427,11 @@
             await loadMyReservations();
             document.getElementById('profileModal').classList.add('active');
             // Manually activate reservations tab by default
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab')[1].classList.add('active'); // Second tab (Pelinvetovuoroni)
+            const tabs = document.querySelectorAll('#profileModal .tab');
+            const tabContents = document.querySelectorAll('#profileModal .tab-content');
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            tabs[1].classList.add('active'); // Second tab (Pelinvetovuoroni)
             document.getElementById('reservationsTab').classList.add('active');
         }
         
@@ -535,6 +537,13 @@
                 return;
             }
             
+            if (!calendar) {
+                console.error('Calendar not initialized');
+                return;
+            }
+            
+            console.log('Loaded reservations:', data);
+            
             calendar.removeAllEvents();
             
             const groupedByDate = {};
@@ -550,6 +559,8 @@
                 const displayName = reservations.length === 1 
                     ? reservations[0].profiles.name 
                     : `${reservations.length} vetäjää`;
+                
+                console.log('Adding event:', date, displayName);
                 
                 calendar.addEvent({
                     id: date,
