@@ -1032,14 +1032,14 @@
             // Load all users
             const { data: users } = await supabaseClient
                 .from('profiles')
-                .select('id, name, email, phone, is_admin, created_at')
+                .select('id, name, phone, is_admin, created_at')
                 .order('name');
             
             const userListHtml = users.map(user => `
                 <div class="user-item">
                     <div class="user-item-info">
                         <strong>${user.name}</strong> ${user.is_admin ? '<span class="admin-badge">ADMIN</span>' : ''}
-                        <br><small>${user.email}</small>
+                        <br><small>${user.phone || 'Ei puhelinnumeroa'}</small>
                     </div>
                     <div class="user-item-actions">
                         ${user.id !== currentUser.id ? `
