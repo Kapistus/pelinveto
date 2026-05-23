@@ -846,7 +846,11 @@
         async function promoteBackupIfExists(eventDate) {
             const { data: backups } = await supabaseClient
                 .from('reservations')
-                .select('id, user_id, profiles!inner(name)')
+                .select(`
+                    id, 
+                    user_id, 
+                    profiles!inner(name)
+                `)
                 .eq('event_date', eventDate)
                 .eq('is_backup', true)
                 .order('created_at')
@@ -854,13 +858,40 @@
             
             if (backups && backups.length > 0) {
                 const backup = backups[0];
+                
+                // Promote backup to primary
                 await supabaseClient
                     .from('reservations')
                     .update({ is_backup: false, promoted_at: new Date().toISOString() })
                     .eq('id', backup.id);
                 
-                // In a real implementation, send email here
-                console.log('Backup promoted for', eventDate, 'user:', backup.profiles.name);
+                // Get user email - we need to fetch from auth.users via RPC or store in profiles
+                // For now, we'll call the edge function with user_id and let it fetch the email server-side
+                try {
+                    const { data: session } = await supabaseClient.auth.getSession();
+                    
+                    const response = await fetch('https://kjbzmjombtqciljlewvu.supabase.co/functions/v1/send-promotion-email', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.session.access_token}`
+                        },
+                        body: JSON.stringify({
+                            userId: backup.user_id,
+                            name: backup.profiles.name,
+                            eventDate: eventDate
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        console.log('Promotion email sent for user', backup.user_id);
+                    } else {
+                        console.error('Failed to send promotion email:', await response.text());
+                    }
+                } catch (error) {
+                    console.error('Error sending promotion email:', error);
+                }
+                
                 alert(`Varavetäjä ${backup.profiles.name} on ylennetty päävetäjäksi päivälle ${eventDate}`);
             }
         }
@@ -1110,7 +1141,7 @@
                 html += `<form id="reservationForm" onsubmit="return handleReservationSubmit(event, '${dateStr}', ${!!primary})">
                     <div class="form-group">
                         <label>Kommentti (valinnainen)</label>
-                        <textarea id="reservationComment" placeholder="Esim. 'Tarvitaan apuvetäjä' tai 'Säävaraus'"></textarea>
+                        <textarea id="reservationComment" placeholder="Esim. 'Tarvitaan apuvetäjä' tai 'Suunnitelma valmis'"></textarea>
                     </div>
                     <button type="submit">Ilmoittaudu ${signupType}</button>
                 </form>`;
