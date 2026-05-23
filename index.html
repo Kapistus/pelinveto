@@ -717,7 +717,10 @@
                     </div>
                 </div>
                 
-                <h4 style="margin-top: 30px;">Vetäjätilastot</h4>
+                <h4 style="margin-top: 30px;">Vähiten pelejä kuluneen 3kk aikana</h4>
+                <div id="leastActiveMarshals"></div>
+                
+                <h4 style="margin-top: 30px;">Vetäjätilastot (kaikki ajat)</h4>
                 <div id="marshalStats"></div>
             </div>
         </div>
@@ -1209,6 +1212,10 @@
                 .select('event_date, user_id, is_backup');
             
             const today = new Date().toISOString().split('T')[0];
+            const threeMonthsAgo = new Date();
+            threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+            const threeMonthsAgoStr = threeMonthsAgo.toISOString().split('T')[0];
+            
             const totalGames = new Set(allReservations.map(r => r.event_date)).size;
             const upcomingGames = new Set(allReservations.filter(r => r.event_date >= today).map(r => r.event_date)).size;
             const activeMarshals = new Set(allReservations.map(r => r.user_id)).size;
@@ -1217,7 +1224,7 @@
             document.getElementById('statUpcomingGames').textContent = upcomingGames;
             document.getElementById('statActiveMarshals').textContent = activeMarshals;
             
-            // Marshal stats
+            // Calculate games per marshal (all time, primary only)
             const marshalCounts = {};
             allReservations.forEach(res => {
                 if (!res.is_backup) {
@@ -1225,21 +1232,55 @@
                 }
             });
             
-            const marshalStatsHtml = await Promise.all(
-                Object.entries(marshalCounts)
-                    .sort((a, b) => b[1] - a[1])
-                    .map(async ([userId, count]) => {
-                        const user = users.find(u => u.id === userId);
-                        return `
-                            <div class="stat-card">
-                                <div class="stat-label">${user?.name || 'Tuntematon'}</div>
-                                <div class="stat-value">${count} peliä</div>
-                            </div>
-                        `;
-                    })
-            );
+            // Calculate games in last 3 months (primary only)
+            const recentMarshalCounts = {};
+            allReservations
+                .filter(r => !r.is_backup && r.event_date >= threeMonthsAgoStr)
+                .forEach(res => {
+                    recentMarshalCounts[res.user_id] = (recentMarshalCounts[res.user_id] || 0) + 1;
+                });
             
-            document.getElementById('marshalStats').innerHTML = `<div class="stats-grid">${marshalStatsHtml.join('')}</div>`;
+            // Least active in last 3 months (include users with 0 games)
+            const leastActiveData = users.map(user => ({
+                name: user.name,
+                count: recentMarshalCounts[user.id] || 0
+            })).sort((a, b) => a.count - b.count);
+            
+            const leastActiveHtml = leastActiveData.slice(0, 5).map(item => `
+                <div class="stat-card">
+                    <div class="stat-label">${item.name}</div>
+                    <div class="stat-value">${item.count} peliä</div>
+                </div>
+            `).join('');
+            
+            document.getElementById('leastActiveMarshals').innerHTML = `<div class="stats-grid">${leastActiveHtml}</div>`;
+            
+            // All-time marshal stats with bar chart
+            const sortedMarshals = Object.entries(marshalCounts)
+                .map(([userId, count]) => {
+                    const user = users.find(u => u.id === userId);
+                    return { name: user?.name || 'Tuntematon', count };
+                })
+                .sort((a, b) => b.count - a.count);
+            
+            const maxCount = Math.max(...sortedMarshals.map(m => m.count));
+            
+            const chartHtml = sortedMarshals.map(marshal => {
+                const barWidth = (marshal.count / maxCount) * 100;
+                return `
+                    <div style="margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span style="font-weight: 500;">${marshal.name}</span>
+                            <span style="color: #666;">${marshal.count} peliä</span>
+                        </div>
+                        <div style="background: #e5e7eb; border-radius: 4px; height: 24px; overflow: hidden;">
+                            <div style="background: #2563eb; height: 100%; width: ${barWidth}%; border-radius: 4px; transition: width 0.3s;"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('marshalStats').innerHTML = chartHtml || '<p style="color: #666;">Ei vielä pelejä</p>';
         }
         
         // Form handlers
