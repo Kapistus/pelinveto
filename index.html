@@ -251,22 +251,39 @@
             
             /* Fix FullCalendar mobile issues */
             .fc .fc-toolbar {
-                flex-wrap: wrap;
-                gap: 10px;
+                flex-wrap: nowrap;
+                gap: 5px;
+                margin-bottom: 10px;
             }
             
             .fc .fc-toolbar-title {
-                font-size: 1.2rem;
-                margin: 5px 0;
+                font-size: 1.1rem;
+                margin: 0;
+                padding: 8px 5px;
+                flex-shrink: 1;
+                min-width: 0;
+                text-align: center;
             }
             
             .fc .fc-button {
-                padding: 8px 12px;
-                font-size: 14px;
+                padding: 6px 10px;
+                font-size: 13px;
             }
             
             .fc-header-toolbar {
-                margin-bottom: 15px !important;
+                margin-bottom: 10px !important;
+            }
+            
+            .fc .fc-toolbar-chunk {
+                display: flex;
+                align-items: center;
+            }
+            
+            /* Footer toolbar spacing */
+            .fc .fc-footer-toolbar {
+                margin-top: 10px !important;
+                padding-top: 10px;
+                border-top: 1px solid #ddd;
             }
             
             /* Prevent calendar from being cut off when scrolling */
@@ -938,13 +955,18 @@
                 firstDay: 1,
                 height: 'auto',
                 aspectRatio: isMobile ? 1.0 : 1.35,
-                headerToolbar: {
-                    left: 'prev,next',
+                headerToolbar: isMobile ? {
+                    left: 'prev',
                     center: 'title',
-                    right: isMobile ? 'today' : 'today dayGridMonth,listMonth'
+                    right: 'next'
+                } : {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,listMonth'
                 },
                 footerToolbar: isMobile ? {
-                    center: 'dayGridMonth,listMonth'
+                    left: 'today',
+                    right: 'dayGridMonth,listMonth'
                 } : false,
                 buttonText: {
                     today: 'Tänään',
