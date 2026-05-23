@@ -262,6 +262,15 @@
         
         .fc-event {
             cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .fc-daygrid-event {
+            font-weight: bold;
+        }
+        
+        .fc-day-today {
+            background: #fff9e6 !important;
         }
     </style>
 </head>
@@ -302,6 +311,9 @@
             <div class="form-group">
                 <label>Salasana (vähintään 6 merkkiä)</label>
                 <input type="password" id="registerPassword" required minlength="6">
+            </div>
+            <div class="info" style="font-size: 13px;">
+                Rekisteröitymällä hyväksyt, että tallennamme nimesi, sähköpostiosoitteesi ja puhelinnumerosi pelinvetovuorojen hallintaa varten. Voit muokata tai poistaa tietosi milloin tahansa profiiliasetuksista.
             </div>
             <button type="submit">Rekisteröidy</button>
             <button type="button" class="link-btn" onclick="showLogin()">Onko sinulla jo tunnukset? Kirjaudu</button>
@@ -414,7 +426,11 @@
             
             await loadMyReservations();
             document.getElementById('profileModal').classList.add('active');
-            showTab('profile');
+            // Manually activate profile tab
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector('.tab').classList.add('active');
+            document.getElementById('profileTab').classList.add('active');
         }
         
         function closeProfileModal() {
@@ -530,13 +546,19 @@
             });
             
             Object.entries(groupedByDate).forEach(([date, reservations]) => {
+                // Get first marshal's name (or show count if multiple)
+                const displayName = reservations.length === 1 
+                    ? reservations[0].profiles.name 
+                    : `${reservations.length} vetäjää`;
+                
                 calendar.addEvent({
                     id: date,
-                    title: `${reservations.length} vetäjä${reservations.length > 1 ? 'ä' : ''}`,
+                    title: displayName,
                     start: date,
                     allDay: true,
-                    backgroundColor: '#2563eb',
-                    borderColor: '#1d4ed8',
+                    backgroundColor: '#10b981',
+                    borderColor: '#059669',
+                    textColor: '#ffffff',
                     extendedProps: { reservations }
                 });
             });
@@ -567,38 +589,40 @@
             let html = '';
             
             if (data && data.length > 0) {
-                html += '<h4 style="margin-bottom: 15px;">Ilmoittautuneet vetäjät:</h4>';
+                // Show current marshal(s)
+                html += '<h4 style="margin-bottom: 15px;">Pelinvetäjä:</h4>';
                 data.forEach(res => {
                     const isOwn = res.user_id === currentUser.id;
                     html += `<div class="reservation-item">
                         <strong>${res.profiles.name}</strong>
                         ${res.profiles.phone ? `<br>Puhelin: ${res.profiles.phone}` : ''}
                         ${res.comment ? `<br>Kommentti: ${res.comment}` : ''}
-                        ${isOwn ? `<br><button class="delete-btn" onclick="deleteReservation('${res.id}')">Poista ilmoittautumiseni</button>` : ''}
+                        ${isOwn ? `<br><button class="delete-btn" onclick="if(confirm('Haluatko varmasti poistaa ilmoittautumisesi?')) deleteReservation('${res.id}')">Poista ilmoittautumiseni</button>` : ''}
                     </div>`;
                 });
                 
+                // If current user hasn't signed up and there's space, allow signup
                 const alreadySignedUp = data.some(r => r.user_id === currentUser.id);
-                if (!alreadySignedUp) {
+                if (!alreadySignedUp && data.length < 1) {
                     html += '<hr style="margin: 20px 0;">';
                     html += '<h4 style="margin-bottom: 10px;">Ilmoittaudu vetäjäksi:</h4>';
                     html += `<form id="reservationForm" onsubmit="return handleReservationSubmit(event, '${dateStr}')">
                         <div class="form-group">
                             <label>Kommentti (valinnainen)</label>
-                            <textarea id="reservationComment"></textarea>
+                            <textarea id="reservationComment" placeholder="Esim. 'Tarvitaan apuvetäjä' tai 'Suunnitelma valmis'"></textarea>
                         </div>
-                        <button type="submit">Ilmoittaudu</button>
+                        <button type="submit">Ilmoittaudu vetäjäksi</button>
                     </form>`;
                 }
             } else {
-                html += '<p style="margin-bottom: 20px;">Ei vielä ilmoittautuneita.</p>';
-                html += '<h4 style="margin-bottom: 10px;">Ole ensimmäinen vetäjä:</h4>';
+                html += '<p style="margin-bottom: 20px;">Ei vielä pelinvetäjää tälle päivälle.</p>';
+                html += '<h4 style="margin-bottom: 10px;">Ilmoittaudu vetäjäksi:</h4>';
                 html += `<form id="reservationForm" onsubmit="return handleReservationSubmit(event, '${dateStr}')">
                     <div class="form-group">
                         <label>Kommentti (valinnainen)</label>
-                        <textarea id="reservationComment"></textarea>
+                        <textarea id="reservationComment" placeholder="Esim. 'Tarvitaan apuvetäjä' tai 'Suunnitelma valmis'"></textarea>
                     </div>
-                    <button type="submit">Ilmoittaudu</button>
+                    <button type="submit">Ilmoittaudu vetäjäksi</button>
                 </form>`;
             }
             
