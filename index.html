@@ -559,6 +559,18 @@
             background: #fff9e6 !important;
         }
         
+        /* Highlight Wednesdays and Saturdays with light blue */
+        .fc-daygrid-day.fc-day-wed,
+        .fc-daygrid-day.fc-day-sat {
+            background-color: #e0f2fe !important;
+        }
+        
+        /* Keep today's yellow color even if it's Wed/Sat */
+        .fc-day-today.fc-day-wed,
+        .fc-day-today.fc-day-sat {
+            background-color: #fff9e6 !important;
+        }
+        
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
