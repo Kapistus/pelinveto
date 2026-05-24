@@ -877,10 +877,13 @@
                 .from('registration_codes')
                 .select('code')
                 .eq('is_active', true)
-                .single();
+                .limit(1)
+                .maybeSingle();
             
             if (data) {
                 document.getElementById('currentCodeDisplay').value = data.code;
+            } else {
+                document.getElementById('currentCodeDisplay').value = '(ei koodia)';
             }
         }
         
@@ -1684,7 +1687,8 @@
                 .select('code, is_active')
                 .eq('code', code)
                 .eq('is_active', true)
-                .single();
+                .limit(1)
+                .maybeSingle();
             
             if (codeError || !codes) {
                 showMessage('registerMessage', 'Virheellinen rekisteröintikoodi.', 'error');
