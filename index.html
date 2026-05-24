@@ -1090,6 +1090,8 @@
                 day: 'numeric'
             });
             
+            console.log('isAdmin status:', isAdmin); // Debug log
+            
             document.getElementById('modalDateTitle').textContent = formattedDate;
             
             const { data, error } = await supabaseClient
@@ -1148,8 +1150,51 @@
                     </div>
                     <button type="submit">Ilmoittaudu ${signupType}</button>
                 </form>`;
+                
+                // Admin quick-assign
+                if (isAdmin) {
+                    html += `<hr style="margin: 20px 0;">`;
+                    html += `<h4 style="margin-bottom: 10px;">Ylläpitäjä: Määritä vetäjä</h4>`;
+                    html += `<form id="adminAssignForm" onsubmit="return handleAdminAssign(event, '${dateStr}', ${!!primary})">
+                        <div class="form-group">
+                            <label>Valitse käyttäjä</label>
+                            <select id="adminAssignUser" required>
+                                <option value="">-- Valitse käyttäjä --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Kommentti (valinnainen)</label>
+                            <textarea id="adminAssignComment"></textarea>
+                        </div>
+                        <button type="submit">Määritä ${signupType}</button>
+                    </form>`;
+                    
+                    // Load users for dropdown
+                    loadUsersForAssignment();
+                }
             } else if (!primary) {
                 html += '<p style="margin-top: 20px;">Ei vielä vetäjää tälle päivälle.</p>';
+                
+                // Admin quick-assign even when user has reservation
+                if (isAdmin) {
+                    html += `<hr style="margin: 20px 0;">`;
+                    html += `<h4 style="margin-bottom: 10px;">Ylläpitäjä: Määritä vetäjä</h4>`;
+                    html += `<form id="adminAssignForm" onsubmit="return handleAdminAssign(event, '${dateStr}', false)">
+                        <div class="form-group">
+                            <label>Valitse käyttäjä</label>
+                            <select id="adminAssignUser" required>
+                                <option value="">-- Valitse käyttäjä --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Kommentti (valinnainen)</label>
+                            <textarea id="adminAssignComment"></textarea>
+                        </div>
+                        <button type="submit">Määritä vetäjäksi</button>
+                    </form>`;
+                    
+                    loadUsersForAssignment();
+                }
             }
             
             document.getElementById('modalContent').innerHTML = html;
@@ -1173,6 +1218,49 @@
             
             if (error) {
                 alert('Virhe ilmoittautumisessa: ' + error.message);
+            } else {
+                closeDateModal();
+                await loadReservations();
+            }
+            return false;
+        }
+        
+        async function loadUsersForAssignment() {
+            const { data: users } = await supabaseClient
+                .from('profiles')
+                .select('id, name')
+                .order('name');
+            
+            const select = document.getElementById('adminAssignUser');
+            if (select && users) {
+                users.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.textContent = user.name;
+                    select.appendChild(option);
+                });
+            }
+        }
+        
+        async function handleAdminAssign(event, dateStr, isBackup) {
+            event.preventDefault();
+            const userId = document.getElementById('adminAssignUser').value;
+            const comment = document.getElementById('adminAssignComment').value;
+            
+            if (!userId) {
+                alert('Valitse käyttäjä');
+                return false;
+            }
+            
+            const { error } = await supabaseClient.from('reservations').insert({
+                user_id: userId,
+                event_date: dateStr,
+                comment: comment || null,
+                is_backup: isBackup
+            });
+            
+            if (error) {
+                alert('Virhe määrityksessä: ' + error.message);
             } else {
                 closeDateModal();
                 await loadReservations();
