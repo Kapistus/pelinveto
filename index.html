@@ -672,6 +672,10 @@
                 <input type="tel" id="registerPhone" required pattern="^(\+358|0)[0-9]{9,10}$" placeholder="+358401234567 tai 0401234567">
             </div>
             <div class="form-group">
+                <label>Rekisteröintikoodi</label>
+                <input type="text" id="registerCode" required placeholder="Kysy järjestäjältä">
+            </div>
+            <div class="form-group">
                 <label>Salasana (vähintään 6 merkkiä)</label>
                 <input type="password" id="registerPassword" required minlength="6">
             </div>
@@ -741,6 +745,27 @@
                 <h4>Käyttäjähallinta</h4>
                 <div id="userList"></div>
                 
+                <div id="superAdminSection" style="display: none;">
+                    <h4 style="margin-top: 30px;">Rekisteröintikoodi (vain superadmin)</h4>
+                    <div class="form-group">
+                        <label>Nykyinen koodi</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="text" id="currentCodeDisplay" readonly style="flex: 1;">
+                            <button class="secondary-btn" onclick="showNewCodeForm()">Vaihda koodi</button>
+                        </div>
+                    </div>
+                    <div id="newCodeForm" style="display: none; margin-top: 15px;">
+                        <div class="form-group">
+                            <label>Uusi koodi</label>
+                            <input type="text" id="newCodeInput" placeholder="Esim. KOKKOLA2026">
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="updateRegistrationCode()">Tallenna uusi koodi</button>
+                            <button class="secondary-btn" onclick="cancelNewCodeForm()">Peruuta</button>
+                        </div>
+                    </div>
+                </div>
+                
                 <h4 style="margin-top: 30px;">Tilastot</h4>
                 <div class="stats-grid">
                     <div class="stat-card">
@@ -791,6 +816,61 @@
             document.getElementById('loginScreen').classList.remove('hidden');
         }
         
+        function showNewCodeForm() {
+            document.getElementById('newCodeForm').style.display = 'block';
+            document.getElementById('newCodeInput').focus();
+        }
+        
+        function cancelNewCodeForm() {
+            document.getElementById('newCodeForm').style.display = 'none';
+            document.getElementById('newCodeInput').value = '';
+        }
+        
+        async function updateRegistrationCode() {
+            const newCode = document.getElementById('newCodeInput').value.trim();
+            
+            if (!newCode) {
+                alert('Syötä uusi koodi');
+                return;
+            }
+            
+            if (newCode.length < 6) {
+                alert('Koodin on oltava vähintään 6 merkkiä');
+                return;
+            }
+            
+            // Deactivate old codes
+            await supabaseClient
+                .from('registration_codes')
+                .update({ is_active: false })
+                .eq('is_active', true);
+            
+            // Insert new code
+            const { error } = await supabaseClient
+                .from('registration_codes')
+                .insert({ code: newCode, created_by: currentUser.id, is_active: true });
+            
+            if (error) {
+                alert('Virhe: ' + error.message);
+            } else {
+                alert('Rekisteröintikoodi päivitetty!');
+                cancelNewCodeForm();
+                await loadCurrentCode();
+            }
+        }
+        
+        async function loadCurrentCode() {
+            const { data } = await supabaseClient
+                .from('registration_codes')
+                .select('code')
+                .eq('is_active', true)
+                .single();
+            
+            if (data) {
+                document.getElementById('currentCodeDisplay').value = data.code;
+            }
+        }
+        
         async function logout() {
             await supabaseClient.auth.signOut();
             // onAuthStateChange SIGNED_OUT event will handle cleanup
@@ -803,7 +883,7 @@
         async function showProfileModal() {
             const { data, error } = await supabaseClient
                 .from('profiles')
-                .select('*')
+                .select('id, name, phone, is_admin, is_super_admin')
                 .eq('id', currentUser.id)
                 .single();
             
@@ -1426,6 +1506,12 @@
             
             document.getElementById('userList').innerHTML = `<ul class="user-list">${userListHtml}</ul>`;
             
+            // Show superadmin section and load current code if superadmin
+            if (isSuperAdmin) {
+                document.getElementById('superAdminSection').style.display = 'block';
+                await loadCurrentCode();
+            }
+            
             // Load statistics
             const { data: allReservations } = await supabaseClient
                 .from('reservations')
@@ -1525,6 +1611,20 @@
             const email = document.getElementById('registerEmail').value;
             const phone = document.getElementById('registerPhone').value;
             const password = document.getElementById('registerPassword').value;
+            const code = document.getElementById('registerCode').value;
+            
+            // Validate registration code
+            const { data: codes, error: codeError } = await supabaseClient
+                .from('registration_codes')
+                .select('code, is_active')
+                .eq('code', code)
+                .eq('is_active', true)
+                .single();
+            
+            if (codeError || !codes) {
+                showMessage('registerMessage', 'Virheellinen rekisteröintikoodi.', 'error');
+                return;
+            }
             
             const { error } = await supabaseClient.auth.signUp({
                 email,
