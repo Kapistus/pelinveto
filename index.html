@@ -822,19 +822,21 @@
             
             if (!confirm(confirmMsg)) return;
             
+            // Fetch event_date BEFORE deleting
+            const { data: reservation } = await supabaseClient
+                .from('reservations')
+                .select('event_date, is_backup')
+                .eq('id', id)
+                .single();
+            
+            // Delete the reservation
             const { error } = await supabaseClient.from('reservations').delete().eq('id', id);
             
             if (error) {
                 alert('Virhe: ' + error.message);
             } else {
-                // Check if there's a backup to promote
-                const { data: reservation } = await supabaseClient
-                    .from('reservations')
-                    .select('event_date')
-                    .eq('id', id)
-                    .single();
-                
-                if (reservation) {
+                // Promote backup if the deleted reservation was primary
+                if (reservation && !reservation.is_backup) {
                     await promoteBackupIfExists(reservation.event_date);
                 }
                 
@@ -901,7 +903,7 @@
             
             const { data: reservation } = await supabaseClient
                 .from('reservations')
-                .select('event_date')
+                .select('event_date, is_backup')
                 .eq('id', id)
                 .single();
             
@@ -910,7 +912,8 @@
             if (error) {
                 alert('Virhe: ' + error.message);
             } else {
-                if (reservation) {
+                // Only promote backup if the deleted reservation was primary
+                if (reservation && !reservation.is_backup) {
                     await promoteBackupIfExists(reservation.event_date);
                 }
                 await loadMyReservations();
