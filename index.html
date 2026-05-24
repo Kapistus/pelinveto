@@ -1359,12 +1359,19 @@
                 showMessage('registerMessage', error.message, 'error');
             } else {
                 if (data.user) {
-                    await supabaseClient.from('profiles').insert({
+                    const { error: profileError } = await supabaseClient.from('profiles').insert({
                         id: data.user.id,
                         name,
                         phone,
                         is_admin: false
                     });
+                    
+                    if (profileError) {
+                        showMessage('registerMessage', 
+                            'Käyttäjä luotu, mutta profiilin luonti epäonnistui. Ota yhteyttä ylläpitoon. Virhe: ' + profileError.message, 
+                            'error');
+                        return;
+                    }
                 }
                 showMessage('registerMessage', 
                     'Rekisteröinti onnistui! Tarkista sähköpostisi vahvistaaksesi tilisi.', 
