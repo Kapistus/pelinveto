@@ -816,6 +816,16 @@
             document.getElementById('loginScreen').classList.remove('hidden');
         }
         
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        
         function showNewCodeForm() {
             document.getElementById('newCodeForm').style.display = 'block';
             document.getElementById('newCodeInput').focus();
@@ -852,16 +862,11 @@
                 return;
             }
             
-            // Deactivate old codes
-            await supabaseClient
-                .from('registration_codes')
-                .update({ is_active: false })
-                .eq('is_active', true);
-            
-            // Insert new code
-            const { error } = await supabaseClient
-                .from('registration_codes')
-                .insert({ code: newCode, created_by: currentUser.id, is_active: true });
+            // Use RPC for atomic update
+            const { error } = await supabaseClient.rpc('update_registration_code', {
+                new_code: newCode,
+                user_id: currentUser.id
+            });
             
             if (error) {
                 alert('Virhe: ' + error.message);
@@ -1331,10 +1336,10 @@
                 }
                 
                 html += `<div class="reservation-item">
-                    <strong>${primary.public_profiles.name}</strong>
-                    ${phone ? `<br>Puhelin: ${phone}` : ''}
-                    ${primary.comment ? `<br>Kommentti: ${primary.comment}` : ''}
-                    ${isOwn || isAdmin ? `<br><button class="delete-btn" onclick="if(confirm('Haluatko varmasti poistaa ${isOwn ? 'ilmoittautumisesi' : primary.public_profiles.name + ':n ilmoittautumisen'}?')) deleteReservation('${primary.id}', ${!isOwn})">Poista ${isOwn ? 'ilmoittautumiseni' : ''}</button>` : ''}
+                    <strong>${escapeHtml(primary.public_profiles.name)}</strong>
+                    ${phone ? `<br>Puhelin: ${escapeHtml(phone)}` : ''}
+                    ${primary.comment ? `<br>Kommentti: ${escapeHtml(primary.comment)}` : ''}
+                    ${isOwn || isAdmin ? `<br><button class="delete-btn" onclick="if(confirm('Haluatko varmasti poistaa ${isOwn ? 'ilmoittautumisesi' : escapeHtml(primary.public_profiles.name) + ':n ilmoittautumisen'}?')) deleteReservation('${primary.id}', ${!isOwn})">Poista ${isOwn ? 'ilmoittautumiseni' : ''}</button>` : ''}
                 </div>`;
             }
             
@@ -1355,10 +1360,10 @@
                     }
                     
                     html += `<div class="reservation-item">
-                        <strong>${backup.public_profiles.name}</strong> <span class="backup-badge">VARA</span>
-                        ${phone ? `<br>Puhelin: ${phone}` : ''}
-                        ${backup.comment ? `<br>Kommentti: ${backup.comment}` : ''}
-                        ${isOwn || isAdmin ? `<br><button class="delete-btn" onclick="if(confirm('Haluatko varmasti poistaa ${isOwn ? 'varavetäjyytesi' : backup.public_profiles.name + ':n varavetäjyyden'}?')) deleteReservation('${backup.id}', ${!isOwn})">Poista</button>` : ''}
+                        <strong>${escapeHtml(backup.public_profiles.name)}</strong> <span class="backup-badge">VARA</span>
+                        ${phone ? `<br>Puhelin: ${escapeHtml(phone)}` : ''}
+                        ${backup.comment ? `<br>Kommentti: ${escapeHtml(backup.comment)}` : ''}
+                        ${isOwn || isAdmin ? `<br><button class="delete-btn" onclick="if(confirm('Haluatko varmasti poistaa ${isOwn ? 'varavetäjyytesi' : escapeHtml(backup.public_profiles.name) + ':n varavetäjyyden'}?')) deleteReservation('${backup.id}', ${!isOwn})">Poista</button>` : ''}
                     </div>`;
                 }
             }
@@ -1519,7 +1524,7 @@
                 const badgeClass = res.is_backup ? 'backup-badge' : 'admin-badge';
                 html += `<div class="reservation-item">
                     <strong>${date}</strong> <span class="${badgeClass}">${role}</span>
-                    ${res.comment ? `<br>Kommentti: ${res.comment}` : ''}
+                    ${res.comment ? `<br>Kommentti: ${escapeHtml(res.comment)}` : ''}
                     <br><button class="delete-btn" onclick="if(confirm('Poista tämä ilmoittautuminen?')) deleteReservationFromProfile('${res.id}')">Poista</button>
                 </div>`;
             });
@@ -1539,10 +1544,10 @@
             const userListHtml = users.map(user => `
                 <div class="user-item">
                     <div class="user-item-info">
-                        <strong>${user.name}</strong> 
+                        <strong>${escapeHtml(user.name)}</strong> 
                         ${user.is_super_admin ? '<span class="admin-badge" style="background: #7c3aed;">SUPERADMIN</span>' : ''}
                         ${user.is_admin && !user.is_super_admin ? '<span class="admin-badge">ADMIN</span>' : ''}
-                        <br><small>${user.phone || 'Ei puhelinnumeroa'}</small>
+                        <br><small>${escapeHtml(user.phone) || 'Ei puhelinnumeroa'}</small>
                     </div>
                     <div class="user-item-actions">
                         ${user.id === currentUser.id ? 
