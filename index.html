@@ -1416,7 +1416,7 @@
                     <button type="submit">Määritä ${signupType}</button>
                 </form>`;
                 
-                loadUsersForAssignment();
+                loadUsersForAssignment(dateStr);
             }
             
             document.getElementById('modalContent').innerHTML = html;
@@ -1447,20 +1447,40 @@
             return false;
         }
         
-        async function loadUsersForAssignment() {
+        async function loadUsersForAssignment(dateStr) {
+            // Get all users
             const { data: users } = await supabaseClient
                 .from('profiles')
                 .select('id, name')
                 .order('name');
             
+            // Get users who already have reservations on this date
+            const { data: existingReservations } = await supabaseClient
+                .from('reservations')
+                .select('user_id')
+                .eq('event_date', dateStr);
+            
+            const reservedUserIds = new Set(existingReservations?.map(r => r.user_id) || []);
+            
             const select = document.getElementById('adminAssignUser');
             if (select && users) {
-                users.forEach(user => {
+                // Filter out users who already have a reservation
+                const availableUsers = users.filter(user => !reservedUserIds.has(user.id));
+                
+                availableUsers.forEach(user => {
                     const option = document.createElement('option');
                     option.value = user.id;
                     option.textContent = user.name;
                     select.appendChild(option);
                 });
+                
+                if (availableUsers.length === 0) {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'Kaikki käyttäjät jo ilmoittautuneet';
+                    option.disabled = true;
+                    select.appendChild(option);
+                }
             }
         }
         
