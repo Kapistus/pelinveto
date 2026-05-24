@@ -862,11 +862,16 @@
                 return;
             }
             
-            // Use RPC for atomic update
-            const { error } = await supabaseClient.rpc('update_registration_code', {
-                new_code: newCode,
-                user_id: currentUser.id
-            });
+            // Deactivate old codes
+            await supabaseClient
+                .from('registration_codes')
+                .update({ is_active: false })
+                .eq('is_active', true);
+            
+            // Insert new code
+            const { error } = await supabaseClient
+                .from('registration_codes')
+                .insert({ code: newCode, created_by: currentUser.id, is_active: true });
             
             if (error) {
                 alert('Virhe: ' + error.message);
