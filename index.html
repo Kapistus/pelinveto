@@ -559,18 +559,6 @@
             background: #fff9e6 !important;
         }
         
-        /* Highlight Wednesdays and Saturdays with light blue */
-        .fc-daygrid-day.fc-day-wed,
-        .fc-daygrid-day.fc-day-sat {
-            background-color: #e0f2fe !important;
-        }
-        
-        /* Keep today's yellow color even if it's Wed/Sat */
-        .fc-day-today.fc-day-wed,
-        .fc-day-today.fc-day-sat {
-            background-color: #fff9e6 !important;
-        }
-        
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -805,10 +793,7 @@
         
         async function logout() {
             await supabaseClient.auth.signOut();
-            currentUser = null;
-            isAdmin = false;
-            document.getElementById('appScreen').classList.add('hidden');
-            document.getElementById('loginScreen').classList.remove('hidden');
+            // onAuthStateChange SIGNED_OUT event will handle cleanup
         }
         
         function closeDateModal() {
@@ -899,7 +884,7 @@
                 .select(`
                     id, 
                     user_id, 
-                    profiles!inner(name)
+                    public_profiles!inner(name)
                 `)
                 .eq('event_date', eventDate)
                 .eq('is_backup', true)
@@ -915,8 +900,7 @@
                     .update({ is_backup: false, promoted_at: new Date().toISOString() })
                     .eq('id', backup.id);
                 
-                // Get user email - we need to fetch from auth.users via RPC or store in profiles
-                // For now, we'll call the edge function with user_id and let it fetch the email server-side
+                // Send promotion email
                 try {
                     const { data: session } = await supabaseClient.auth.getSession();
                     
@@ -928,21 +912,19 @@
                         },
                         body: JSON.stringify({
                             userId: backup.user_id,
-                            name: backup.profiles.name,
+                            name: backup.public_profiles.name,
                             eventDate: eventDate
                         })
                     });
                     
-                    if (response.ok) {
-                        console.log('Promotion email sent for user', backup.user_id);
-                    } else {
+                    if (!response.ok) {
                         console.error('Failed to send promotion email:', await response.text());
                     }
                 } catch (error) {
                     console.error('Error sending promotion email:', error);
                 }
                 
-                alert(`Varavetäjä ${backup.profiles.name} on ylennetty päävetäjäksi päivälle ${eventDate}`);
+                alert(`Varavetäjä ${backup.public_profiles.name} on ylennetty päävetäjäksi päivälle ${eventDate}`);
             }
         }
         
@@ -1000,6 +982,43 @@
         
         // Init
         async function init() {
+            // Listen for auth state changes (including email confirmations)
+            supabaseClient.auth.onAuthStateChange(async (event, session) => {
+                if (event === 'SIGNED_IN' && session) {
+                    currentUser = session.user;
+                    
+                    // Check admin status
+                    const { data: profile } = await supabaseClient
+                        .from('profiles')
+                        .select('is_admin, is_super_admin')
+                        .eq('id', currentUser.id)
+                        .single();
+                    
+                    isAdmin = profile?.is_admin || false;
+                    isSuperAdmin = profile?.is_super_admin || false;
+                    
+                    showApp();
+                }
+                
+                if (event === 'SIGNED_OUT') {
+                    currentUser = null;
+                    isAdmin = false;
+                    isSuperAdmin = false;
+                    if (calendar) {
+                        calendar.destroy();
+                        calendar = null;
+                    }
+                    document.getElementById('appScreen').classList.add('hidden');
+                    document.getElementById('loginScreen').classList.remove('hidden');
+                }
+                
+                if (event === 'USER_UPDATED') {
+                    // Email confirmed successfully
+                    alert('Sähköposti vahvistettu! Voit nyt kirjautua sisään.');
+                }
+            });
+            
+            // Check initial session
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
                 currentUser = session.user;
@@ -1025,7 +1044,10 @@
             
             document.getElementById('userEmail').textContent = currentUser.email;
             
-            initCalendar();
+            // Only initialize calendar if it doesn't exist
+            if (!calendar) {
+                initCalendar();
+            }
             await loadReservations();
         }
         
@@ -1104,7 +1126,7 @@
                     comment,
                     user_id,
                     is_backup,
-                    profiles!inner(name)
+                    public_profiles!inner(name)
                 `);
             
             if (error) {
@@ -1116,8 +1138,6 @@
                 console.error('Calendar not initialized');
                 return;
             }
-            
-            console.log('Loaded reservations:', data);
             
             calendar.removeAllEvents();
             
@@ -1135,15 +1155,13 @@
                 
                 let displayName = '';
                 if (primary) {
-                    displayName = primary.profiles.name;
+                    displayName = primary.public_profiles.name;
                     if (backups.length > 0) {
                         displayName += ` (+${backups.length})`;
                     }
                 } else if (backups.length > 0) {
                     displayName = `${backups.length} varalla`;
                 }
-                
-                console.log('Adding event:', date, displayName);
                 
                 calendar.addEvent({
                     id: date,
@@ -1167,8 +1185,6 @@
                 day: 'numeric'
             });
             
-            console.log('isAdmin status:', isAdmin); // Debug log
-            
             document.getElementById('modalDateTitle').textContent = formattedDate;
             
             const { data, error } = await supabaseClient
@@ -1178,7 +1194,7 @@
                     comment,
                     user_id,
                     is_backup,
-                    profiles!inner(name, phone)
+                    public_profiles!inner(name)
                 `)
                 .eq('event_date', dateStr)
                 .order('is_backup')
@@ -1193,27 +1209,49 @@
             if (primary) {
                 html += '<h4 style="margin-bottom: 15px;">Päävetäjä:</h4>';
                 const isOwn = primary.user_id === currentUser.id;
-                const canSeeDetails = isAdmin || isOwn;
+                
+                // Fetch phone only if admin or own reservation
+                let phone = null;
+                if (isAdmin || isOwn) {
+                    const { data: phoneData } = await supabaseClient
+                        .from('profiles')
+                        .select('phone')
+                        .eq('id', primary.user_id)
+                        .single();
+                    phone = phoneData?.phone;
+                }
+                
                 html += `<div class="reservation-item">
-                    <strong>${primary.profiles.name}</strong>
-                    ${canSeeDetails && primary.profiles.phone ? `<br>Puhelin: ${primary.profiles.phone}` : ''}
+                    <strong>${primary.public_profiles.name}</strong>
+                    ${phone ? `<br>Puhelin: ${phone}` : ''}
                     ${primary.comment ? `<br>Kommentti: ${primary.comment}` : ''}
-                    ${isOwn || isAdmin ? `<br><button class="delete-btn" onclick="if(confirm('Haluatko varmasti poistaa ${isOwn ? 'ilmoittautumisesi' : primary.profiles.name + ':n ilmoittautumisen'}?')) deleteReservation('${primary.id}', ${!isOwn})">Poista ${isOwn ? 'ilmoittautumiseni' : ''}</button>` : ''}
+                    ${isOwn || isAdmin ? `<br><button class="delete-btn" onclick="if(confirm('Haluatko varmasti poistaa ${isOwn ? 'ilmoittautumisesi' : primary.public_profiles.name + ':n ilmoittautumisen'}?')) deleteReservation('${primary.id}', ${!isOwn})">Poista ${isOwn ? 'ilmoittautumiseni' : ''}</button>` : ''}
                 </div>`;
             }
             
             if (backups.length > 0) {
                 html += '<h4 style="margin-top: 20px; margin-bottom: 15px;">Varavetäjät:</h4>';
-                backups.forEach(backup => {
+                for (const backup of backups) {
                     const isOwn = backup.user_id === currentUser.id;
-                    const canSeeDetails = isAdmin || isOwn;
+                    
+                    // Fetch phone only if admin or own reservation
+                    let phone = null;
+                    if (isAdmin || isOwn) {
+                        const { data: phoneData } = await supabaseClient
+                            .from('profiles')
+                            .select('phone')
+                            .eq('id', backup.user_id)
+                            .single();
+                        phone = phoneData?.phone;
+                    }
+                    
                     html += `<div class="reservation-item">
-                        <strong>${backup.profiles.name}</strong> <span class="backup-badge">VARA</span>
-                        ${canSeeDetails && backup.profiles.phone ? `<br>Puhelin: ${backup.profiles.phone}` : ''}
+                        <strong>${backup.public_profiles.name}</strong> <span class="backup-badge">VARA</span>
+                        ${phone ? `<br>Puhelin: ${phone}` : ''}
                         ${backup.comment ? `<br>Kommentti: ${backup.comment}` : ''}
-                        ${isOwn || isAdmin ? `<br><button class="delete-btn" onclick="if(confirm('Haluatko varmasti poistaa ${isOwn ? 'varavetäjyytesi' : backup.profiles.name + ':n varavetäjyyden'}?')) deleteReservation('${backup.id}', ${!isOwn})">Poista</button>` : ''}
+                        ${isOwn || isAdmin ? `<br><button class="delete-btn" onclick="if(confirm('Haluatko varmasti poistaa ${isOwn ? 'varavetäjyytesi' : backup.public_profiles.name + ':n varavetäjyyden'}?')) deleteReservation('${backup.id}', ${!isOwn})">Poista</button>` : ''}
                     </div>`;
-                });
+                }
             }
             
             if (!userHasReservation) {
@@ -1473,24 +1511,12 @@
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             
-            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
             
             if (error) {
                 showMessage('authMessage', error.message, 'error');
-            } else {
-                currentUser = data.user;
-                
-                // Check admin status
-                const { data: profile } = await supabaseClient
-                    .from('profiles')
-                    .select('is_admin, is_super_admin')
-                    .eq('id', currentUser.id)
-                    .single();
-                
-                isAdmin = profile?.is_admin || false;
-                isSuperAdmin = profile?.is_super_admin || false;
-                showApp();
             }
+            // onAuthStateChange will handle showing the app
         });
         
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
@@ -1500,7 +1526,7 @@
             const phone = document.getElementById('registerPhone').value;
             const password = document.getElementById('registerPassword').value;
             
-            const { data, error } = await supabaseClient.auth.signUp({
+            const { error } = await supabaseClient.auth.signUp({
                 email,
                 password,
                 options: {
@@ -1511,21 +1537,6 @@
             if (error) {
                 showMessage('registerMessage', error.message, 'error');
             } else {
-                if (data.user) {
-                    const { error: profileError } = await supabaseClient.from('profiles').insert({
-                        id: data.user.id,
-                        name,
-                        phone,
-                        is_admin: false
-                    });
-                    
-                    if (profileError) {
-                        showMessage('registerMessage', 
-                            'Käyttäjä luotu, mutta profiilin luonti epäonnistui. Ota yhteyttä ylläpitoon. Virhe: ' + profileError.message, 
-                            'error');
-                        return;
-                    }
-                }
                 showMessage('registerMessage', 
                     'Rekisteröinti onnistui! Tarkista sähköpostisi vahvistaaksesi tilisi.', 
                     'success');
