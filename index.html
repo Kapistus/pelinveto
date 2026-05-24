@@ -717,8 +717,8 @@
                 <button class="close-btn" onclick="closeProfileModal()">&times;</button>
             </div>
             <div class="tabs" id="profileTabs">
-                <button class="tab" onclick="showTab('profile')">Tietoni</button>
-                <button class="tab active" onclick="showTab('reservations')">Pelinvetovuoroni</button>
+                <button class="tab" onclick="showTab(event, 'profile')">Tietoni</button>
+                <button class="tab active" onclick="showTab(event, 'reservations')">Pelinvetovuoroni</button>
             </div>
             <div id="profileTab" class="tab-content">
                 <div id="profileMessage"></div>
@@ -805,6 +805,7 @@
         let currentUser = null;
         let isAdmin = false;
         let isSuperAdmin = false;
+        let profileModalOpen = false;
         
         // Global functions for onclick handlers
         function showRegister() {
@@ -903,11 +904,15 @@
         }
         
         async function showProfileModal() {
+            profileModalOpen = true;
+            
             const { data, error } = await supabaseClient
                 .from('profiles')
                 .select('id, name, phone, is_admin, is_super_admin')
                 .eq('id', currentUser.id)
                 .single();
+            
+            if (!profileModalOpen) return; // Modal was closed during fetch
             
             if (data) {
                 document.getElementById('profileName').value = data.name || '';
@@ -924,7 +929,7 @@
                     const adminTab = document.createElement('button');
                     adminTab.id = 'adminTabButton';
                     adminTab.className = 'tab';
-                    adminTab.onclick = () => showTab('admin');
+                    adminTab.onclick = (e) => showTab(e, 'admin');
                     adminTab.textContent = 'Ylläpito';
                     tabs.appendChild(adminTab);
                 } else if (!isAdmin && adminTabExists) {
@@ -933,10 +938,13 @@
                 
                 if (isAdmin) {
                     await loadAdminData();
+                    if (!profileModalOpen) return; // Modal was closed during load
                 }
             }
             
             await loadMyReservations();
+            if (!profileModalOpen) return; // Modal was closed during load
+            
             document.getElementById('profileModal').classList.add('active');
             
             // Manually activate reservations tab by default
@@ -955,6 +963,7 @@
         }
         
         function closeProfileModal() {
+            profileModalOpen = false;
             document.getElementById('profileModal').classList.remove('active');
             
             // Reset new code form
@@ -1101,13 +1110,13 @@
             }
         }
         
-        function showTab(tabName) {
+        function showTab(e, tabName) {
             const tabButtons = document.querySelectorAll('#profileModal .tab');
             const tabContents = document.querySelectorAll('#profileModal .tab-content');
             tabButtons.forEach(t => t.classList.remove('active'));
             tabContents.forEach(c => c.classList.remove('active'));
             
-            event.target.classList.add('active');
+            e.currentTarget.classList.add('active');
             document.getElementById(tabName + 'Tab').classList.add('active');
         }
         
@@ -1488,6 +1497,8 @@
                 .eq('user_id', currentUser.id)
                 .order('event_date', { ascending: true });
             
+            if (!profileModalOpen) return; // Modal was closed during fetch
+            
             const container = document.getElementById('myReservationsList');
             
             if (!data || data.length === 0) {
@@ -1522,6 +1533,8 @@
                 .select('id, name, phone, is_admin, is_super_admin, created_at')
                 .order('name');
             
+            if (!profileModalOpen) return; // Modal was closed during fetch
+            
             const userListHtml = users.map(user => `
                 <div class="user-item">
                     <div class="user-item-info">
@@ -1549,12 +1562,15 @@
             if (isSuperAdmin) {
                 document.getElementById('superAdminSection').style.display = 'block';
                 await loadCurrentCode();
+                if (!profileModalOpen) return; // Modal was closed during code load
             }
             
             // Load statistics
             const { data: allReservations } = await supabaseClient
                 .from('reservations')
                 .select('event_date, user_id, is_backup');
+            
+            if (!profileModalOpen) return; // Modal was closed during fetch
             
             const today = new Date().toISOString().split('T')[0];
             const threeMonthsAgo = new Date();
