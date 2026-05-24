@@ -887,7 +887,15 @@
         
         async function logout() {
             await supabaseClient.auth.signOut();
-            // onAuthStateChange SIGNED_OUT event will handle cleanup
+            currentUser = null;
+            isAdmin = false;
+            isSuperAdmin = false;
+            if (calendar) {
+                calendar.destroy();
+                calendar = null;
+            }
+            document.getElementById('appScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
         }
         
         function closeDateModal() {
@@ -1110,43 +1118,6 @@
         
         // Init
         async function init() {
-            // Listen for auth state changes (including email confirmations)
-            supabaseClient.auth.onAuthStateChange(async (event, session) => {
-                if (event === 'SIGNED_IN' && session) {
-                    currentUser = session.user;
-                    
-                    // Check admin status
-                    const { data: profile } = await supabaseClient
-                        .from('profiles')
-                        .select('is_admin, is_super_admin')
-                        .eq('id', currentUser.id)
-                        .single();
-                    
-                    isAdmin = profile?.is_admin || false;
-                    isSuperAdmin = profile?.is_super_admin || false;
-                    
-                    showApp();
-                }
-                
-                if (event === 'SIGNED_OUT') {
-                    currentUser = null;
-                    isAdmin = false;
-                    isSuperAdmin = false;
-                    if (calendar) {
-                        calendar.destroy();
-                        calendar = null;
-                    }
-                    document.getElementById('appScreen').classList.add('hidden');
-                    document.getElementById('loginScreen').classList.remove('hidden');
-                }
-                
-                if (event === 'USER_UPDATED') {
-                    // Email confirmed successfully
-                    alert('Sähköposti vahvistettu! Voit nyt kirjautua sisään.');
-                }
-            });
-            
-            // Check initial session
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
                 currentUser = session.user;
@@ -1397,8 +1368,8 @@
                 html += '<p style="margin-top: 20px;">Ei vielä vetäjää tälle päivälle.</p>';
             }
             
-            // Admin quick-assign - ALWAYS show for admins
-            if (isAdmin) {
+            // Admin quick-assign - only show if there's room (no backup yet, or no primary)
+            if (isAdmin && (backups.length === 0 || !primary)) {
                 html += `<hr style="margin: 20px 0;">`;
                 html += `<h4 style="margin-bottom: 10px;">Ylläpitäjä: Määritä vetäjä</h4>`;
                 const signupType = primary ? 'varavetäjäksi' : 'vetäjäksi';
@@ -1665,12 +1636,24 @@
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             
-            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             
             if (error) {
                 showMessage('authMessage', error.message, 'error');
+            } else {
+                currentUser = data.user;
+                
+                // Check admin status
+                const { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('is_admin, is_super_admin')
+                    .eq('id', currentUser.id)
+                    .single();
+                
+                isAdmin = profile?.is_admin || false;
+                isSuperAdmin = profile?.is_super_admin || false;
+                showApp();
             }
-            // onAuthStateChange will handle showing the app
         });
         
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
