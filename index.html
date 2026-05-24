@@ -749,12 +749,10 @@
                     <h4 style="margin-top: 30px;">Rekisteröintikoodi (vain superadmin)</h4>
                     <div class="form-group">
                         <label>Nykyinen koodi</label>
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <input type="text" id="currentCodeDisplay" readonly style="flex: 1;">
-                            <button class="secondary-btn" onclick="showNewCodeForm()">Vaihda koodi</button>
-                        </div>
+                        <input type="text" id="currentCodeDisplay" readonly style="background: #f5f5f5; font-weight: bold; font-size: 16px;">
                     </div>
-                    <div id="newCodeForm" style="display: none; margin-top: 15px;">
+                    <button class="secondary-btn" onclick="showNewCodeForm()" style="margin-bottom: 15px;">Vaihda koodi</button>
+                    <div id="newCodeForm" style="display: none;">
                         <div class="form-group">
                             <label>Uusi koodi</label>
                             <input type="text" id="newCodeInput" placeholder="Esim. KOKKOLA2026">
@@ -927,6 +925,23 @@
         
         function closeProfileModal() {
             document.getElementById('profileModal').classList.remove('active');
+            
+            // Reset new code form
+            const newCodeForm = document.getElementById('newCodeForm');
+            if (newCodeForm) {
+                newCodeForm.style.display = 'none';
+            }
+            const newCodeInput = document.getElementById('newCodeInput');
+            if (newCodeInput) {
+                newCodeInput.value = '';
+            }
+            
+            // Hide superadmin section
+            const superAdminSection = document.getElementById('superAdminSection');
+            if (superAdminSection) {
+                superAdminSection.style.display = 'none';
+            }
+            
             // Remove admin tab if it exists to prevent duplicates on next open
             const adminTab = document.getElementById('adminTabButton');
             if (adminTab) {
