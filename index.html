@@ -1121,7 +1121,7 @@
                     <strong>${primary.profiles.name}</strong>
                     ${canSeeDetails && primary.profiles.phone ? `<br>Puhelin: ${primary.profiles.phone}` : ''}
                     ${primary.comment ? `<br>Kommentti: ${primary.comment}` : ''}
-                    ${isOwn || isAdmin ? `<br><button class="delete-btn" onclick="if(confirm('Haluatko varmasti poistaa ${isOwn ? 'ilmoittautumisesi' : 'tämän ilmoittautumisen'}?')) deleteReservation('${primary.id}', ${!isOwn})">Poista ${isOwn ? 'ilmoittautumiseni' : '(admin)'}</button>` : ''}
+                    ${isOwn || isAdmin ? `<br><button class="delete-btn" onclick="if(confirm('Haluatko varmasti poistaa ${isOwn ? 'ilmoittautumisesi' : primary.profiles.name + ':n ilmoittautumisen'}?')) deleteReservation('${primary.id}', ${!isOwn})">Poista ${isOwn ? 'ilmoittautumiseni' : ''}</button>` : ''}
                 </div>`;
             }
             
@@ -1134,7 +1134,7 @@
                         <strong>${backup.profiles.name}</strong> <span class="backup-badge">VARA</span>
                         ${canSeeDetails && backup.profiles.phone ? `<br>Puhelin: ${backup.profiles.phone}` : ''}
                         ${backup.comment ? `<br>Kommentti: ${backup.comment}` : ''}
-                        ${isOwn || isAdmin ? `<br><button class="delete-btn" onclick="if(confirm('Haluatko varmasti poistaa ${isOwn ? 'varavetäjyytesi' : 'tämän varavetäjän'}?')) deleteReservation('${backup.id}', ${!isOwn})">Poista</button>` : ''}
+                        ${isOwn || isAdmin ? `<br><button class="delete-btn" onclick="if(confirm('Haluatko varmasti poistaa ${isOwn ? 'varavetäjyytesi' : backup.profiles.name + ':n varavetäjyyden'}?')) deleteReservation('${backup.id}', ${!isOwn})">Poista</button>` : ''}
                     </div>`;
                 });
             }
