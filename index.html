@@ -790,6 +790,7 @@
         let calendar;
         let currentUser = null;
         let isAdmin = false;
+        let isSuperAdmin = false;
         
         // Global functions for onclick handlers
         function showRegister() {
@@ -826,6 +827,7 @@
                 document.getElementById('profileEmail').value = currentUser.email;
                 document.getElementById('profilePhone').value = data.phone || '';
                 isAdmin = data.is_admin || false;
+                isSuperAdmin = data.is_super_admin || false;
                 
                 // Show/hide admin tab
                 const tabs = document.getElementById('profileTabs');
@@ -1005,11 +1007,12 @@
                 // Check admin status
                 const { data: profile } = await supabaseClient
                     .from('profiles')
-                    .select('is_admin')
+                    .select('is_admin, is_super_admin')
                     .eq('id', currentUser.id)
                     .single();
                 
                 isAdmin = profile?.is_admin || false;
+                isSuperAdmin = profile?.is_super_admin || false;
                 
                 showApp();
             }
@@ -1390,11 +1393,14 @@
                         <br><small>${user.phone || 'Ei puhelinnumeroa'}</small>
                     </div>
                     <div class="user-item-actions">
-                        ${user.id !== currentUser.id ? `
-                            <button class="secondary-btn" onclick="toggleAdminStatus('${user.id}', ${user.is_admin})">
-                                ${user.is_admin ? 'Poista admin' : 'Tee admin'}
-                            </button>
-                        ` : '<span style="color: #666;">Sinä</span>'}
+                        ${user.id === currentUser.id ? 
+                            '<span style="color: #666;">Sinä</span>' : 
+                            isSuperAdmin ? 
+                                `<button class="secondary-btn" onclick="toggleAdminStatus('${user.id}', ${user.is_admin})">
+                                    ${user.is_admin ? 'Poista admin' : 'Tee admin'}
+                                </button>` :
+                                ''
+                        }
                     </div>
                 </div>
             `).join('');
@@ -1496,11 +1502,12 @@
                 // Check admin status
                 const { data: profile } = await supabaseClient
                     .from('profiles')
-                    .select('is_admin')
+                    .select('is_admin, is_super_admin')
                     .eq('id', currentUser.id)
                     .single();
                 
                 isAdmin = profile?.is_admin || false;
+                isSuperAdmin = profile?.is_super_admin || false;
                 showApp();
             }
         });
