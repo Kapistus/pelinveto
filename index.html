@@ -1024,6 +1024,28 @@
                 eventDisplay: 'block'
             });
             calendar.render();
+            
+            // Force consistent button sizing after render
+            setTimeout(() => {
+                const style = document.createElement('style');
+                style.textContent = `
+                    .fc .fc-button {
+                        height: 32px !important;
+                        padding: 6px 10px !important;
+                        font-size: 13px !important;
+                        line-height: 1.4 !important;
+                        box-sizing: border-box !important;
+                    }
+                    .fc .fc-today-button {
+                        height: 32px !important;
+                        padding: 6px 10px !important;
+                        font-size: 13px !important;
+                        line-height: 1.4 !important;
+                        box-sizing: border-box !important;
+                    }
+                `;
+                document.head.appendChild(style);
+            }, 100);
         }
         
         async function loadReservations() {
