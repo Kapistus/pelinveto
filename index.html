@@ -1277,21 +1277,18 @@
         }
         
         async function showApp() {
-			document.getElementById('loginScreen').classList.add('hidden');
-			document.getElementById('registerScreen').classList.add('hidden');
-			document.getElementById('appScreen').classList.remove('hidden');
-
-			document.getElementById('userEmail').textContent = currentUser.email;
-
-			if (!calendar) {
-				initCalendar();
-			}
-			await loadReservations();
-
-			if (CHAT_ENABLED_FOR.includes(currentUser.id)) {
-				document.getElementById('chatBox').style.display = 'block';
-				await initChat();
-			}
+		    document.getElementById('loginScreen').classList.add('hidden');
+		    document.getElementById('registerScreen').classList.add('hidden');
+		    document.getElementById('appScreen').classList.remove('hidden');
+		
+		    document.getElementById('userEmail').textContent = currentUser.email;
+		
+		    if (!calendar) {
+		        initCalendar();
+		    }
+		    await loadReservations();
+		
+		    await initChat();
 		}
         
         function initCalendar() {
