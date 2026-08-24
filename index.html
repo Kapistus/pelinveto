@@ -712,6 +712,14 @@
         </div>
         
         <div id="calendar"></div>
+		<div id="chatBox" style="display: none; margin-top: 20px;">
+			<h2 style="margin-bottom: 10px;">Viestit</h2>
+			<div id="chatMessages" style="max-height: 300px; overflow-y: auto; background: #f9fafb; border-radius: 8px; padding: 10px; margin-bottom: 10px;"></div>
+			<form id="chatForm" style="display: flex; gap: 10px;">
+				<input type="text" id="chatInput" placeholder="Kirjoita viesti..." maxlength="500" required style="flex: 1;">
+				<button type="submit" style="width: auto;">Lähetä</button>
+			</form>
+		</div>
     </div>
 
     <div id="dateModal" class="modal">
@@ -818,6 +826,9 @@
         let isAdmin = false;
         let isSuperAdmin = false;
         let profileModalOpen = false;
+		
+		const CHAT_ENABLED_FOR = ['your-user-id-here']; // replace with your actual auth.users id
+		let chatChannel = null;
         
         // Global functions for onclick handlers
         function showRegister() {
@@ -936,18 +947,88 @@
             }
         }
         
+		//
+		async function loadMessages() {
+			const { data, error } = await supabaseClient
+				.from('messages')
+				.select(`
+					id,
+					content,
+					created_at,
+					user_id,
+					public_profiles!inner(name)
+				`)
+				.order('created_at', { ascending: true })
+				.limit(500);
+
+			if (error) {
+				console.error('Virhe ladattaessa viestejä:', error);
+				return;
+			}
+
+			renderMessages(data);
+		}
+
+		function renderMessages(messages) {
+			const container = document.getElementById('chatMessages');
+			container.innerHTML = messages.map(m => {
+				const time = new Date(m.created_at).toLocaleString('fi-FI', {
+					day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit'
+				});
+				return `<div style="margin-bottom: 8px;">
+					<strong>${escapeHtml(m.public_profiles.name)}</strong>
+					<span style="color: #888; font-size: 12px;">${time}</span><br>
+					${escapeHtml(m.content)}
+				</div>`;
+			}).join('');
+			container.scrollTop = container.scrollHeight;
+		}
+
+		async function initChat() {
+			await loadMessages();
+
+			if (chatChannel) return;
+
+			chatChannel = supabaseClient
+				.channel('messages')
+				.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
+					loadMessages();
+				})
+				.subscribe();
+		}
+
+		document.getElementById('chatForm').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const input = document.getElementById('chatInput');
+			const content = input.value.trim();
+			if (!content) return;
+
+			const { error } = await supabaseClient.from('messages').insert({ content });
+
+			if (error) {
+				alert('Virhe viestin lähetyksessä: ' + error.message);
+			} else {
+				input.value = '';
+			}
+		});
+		//
+		
         async function logout() {
-            await supabaseClient.auth.signOut();
-            currentUser = null;
-            isAdmin = false;
-            isSuperAdmin = false;
-            if (calendar) {
-                calendar.destroy();
-                calendar = null;
-            }
-            document.getElementById('appScreen').classList.add('hidden');
-            document.getElementById('loginScreen').classList.remove('hidden');
-        }
+			await supabaseClient.auth.signOut();
+			currentUser = null;
+			isAdmin = false;
+			isSuperAdmin = false;
+			if (chatChannel) {
+				supabaseClient.removeChannel(chatChannel);
+				chatChannel = null;
+			}
+			if (calendar) {
+				calendar.destroy();
+				calendar = null;
+			}
+			document.getElementById('appScreen').classList.add('hidden');
+			document.getElementById('loginScreen').classList.remove('hidden');
+		}
         
         function closeDateModal() {
             document.getElementById('dateModal').classList.remove('active');
@@ -1196,18 +1277,22 @@
         }
         
         async function showApp() {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('registerScreen').classList.add('hidden');
-            document.getElementById('appScreen').classList.remove('hidden');
-            
-            document.getElementById('userEmail').textContent = currentUser.email;
-            
-            // Only initialize calendar if it doesn't exist
-            if (!calendar) {
-                initCalendar();
-            }
-            await loadReservations();
-        }
+			document.getElementById('loginScreen').classList.add('hidden');
+			document.getElementById('registerScreen').classList.add('hidden');
+			document.getElementById('appScreen').classList.remove('hidden');
+
+			document.getElementById('userEmail').textContent = currentUser.email;
+
+			if (!calendar) {
+				initCalendar();
+			}
+			await loadReservations();
+
+			if (CHAT_ENABLED_FOR.includes(currentUser.id)) {
+				document.getElementById('chatBox').style.display = 'block';
+				await initChat();
+			}
+		}
         
         function initCalendar() {
             const calendarEl = document.getElementById('calendar');
