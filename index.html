@@ -651,9 +651,23 @@
                 <input type="password" id="loginPassword" required>
             </div>
             <button type="submit">Kirjaudu</button>
-            <button type="button" class="link-btn" onclick="showRegister()">Tarvitsetko tunnukset? Rekisteröidy</button>
+            <button type="button" class="link-btn" onclick="showRegister()">Tarvitsetko tunnukset?<br>Rekisteröidy</button>
+			<button type="button" class="link-btn" onclick="showForgotPassword()">Unohditko salasanan?</button>
         </form>
     </div>
+
+<div id="forgotPasswordScreen" class="auth-container hidden">
+    <h2 style="margin-bottom: 20px;">Unohtunut salasana</h2>
+    <div id="forgotPasswordMessage"></div>
+    <form id="forgotPasswordForm">
+        <div class="form-group">
+            <label>Sähköposti</label>
+            <input type="email" id="forgotPasswordEmail" required>
+        </div>
+        <button type="submit">Lähetä palautuslinkki</button>
+        <button type="button" class="link-btn" onclick="showLogin()">Takaisin kirjautumiseen</button>
+    </form>
+</div>
 
     <div id="registerScreen" class="auth-container hidden">
         <h2 style="margin-bottom: 20px;">Rekisteröidy</h2>
@@ -683,7 +697,7 @@
                 Rekisteröitymällä hyväksyt, että tallennamme nimesi, sähköpostiosoitteesi ja puhelinnumerosi pelinvetovuorojen hallintaa varten. Voit muokata tai poistaa tietosi milloin tahansa profiiliasetuksista.
             </div>
             <button type="submit">Rekisteröidy</button>
-            <button type="button" class="link-btn" onclick="showLogin()">Onko sinulla jo tunnukset? Kirjaudu</button>
+            <button type="button" class="link-btn" onclick="showLogin()">Onko sinulla jo tunnukset?<br>Kirjaudu</button>
         </form>
     </div>
 
@@ -811,11 +825,36 @@
             document.getElementById('registerScreen').classList.remove('hidden');
         }
         
-        function showLogin() {
-            document.getElementById('registerScreen').classList.add('hidden');
-            document.getElementById('loginScreen').classList.remove('hidden');
-        }
+		 function showLogin() {
+			document.getElementById('registerScreen').classList.add('hidden');
+			document.getElementById('forgotPasswordScreen').classList.add('hidden');
+			document.getElementById('loginScreen').classList.remove('hidden');
+		}
         
+		
+		function showForgotPassword() {
+			document.getElementById('loginScreen').classList.add('hidden');
+			document.getElementById('registerScreen').classList.add('hidden');
+			document.getElementById('forgotPasswordScreen').classList.remove('hidden');
+		}
+
+		document.getElementById('forgotPasswordForm').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const email = document.getElementById('forgotPasswordEmail').value;
+
+			const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+				redirectTo: 'https://kapistus.github.io/pelinveto/reset-password.html'
+			});
+
+			if (error) {
+				showMessage('forgotPasswordMessage', error.message, 'error');
+			} else {
+				showMessage('forgotPasswordMessage',
+					'Jos sähköposti löytyy järjestelmästä, palautuslinkki on lähetetty.',
+					'success');
+			}
+		});
+		
         function escapeHtml(unsafe) {
             if (!unsafe) return '';
             return unsafe
